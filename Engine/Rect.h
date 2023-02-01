@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Graphics.h"
 #include "Vec2.h"
 
 class Rect
@@ -12,7 +11,7 @@ public:
 	Rect(const Vec2& topLeft, float width, float height);
 	bool isOverLapping(const Rect& rect) const;
 
-private:
+public:
 	float left, right, top, bottom;
 };
 

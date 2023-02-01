@@ -20,12 +20,14 @@
  ******************************************************************************************/
 #include "MainWindow.h"
 #include "Game.h"
-#include "Brick.h"
 
-Game::Game( MainWindow& wnd )
+
+Game::Game(MainWindow& wnd)
 	:
-	wnd( wnd ),
-	gfx( wnd )
+	wnd(wnd),
+	gfx(wnd),
+	ball(Vec2(100.0f, 100.0f), Vec2(20.0f, 20.0f)),
+	wall(0.0f, 800.0f, 0.0f, 400.0f)
 {
 }
 
@@ -39,10 +41,15 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
+	const float dt = ft.Mark();
+	ball.update(dt);
+	ball.wallCollision(wall);
 }
 
 void Game::ComposeFrame()
 {
-	Brick b(Rect(40.0f, 100.0f, 40.0f, 60.0f), Colors::Green);
-	b.draw(gfx);
+
+	ball.draw(gfx);
+
+
 }

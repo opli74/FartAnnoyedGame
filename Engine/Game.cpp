@@ -26,8 +26,8 @@ Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd),
-	ball(Vec2(100.0f, 100.0f), Vec2(20.0f, 20.0f)),
-	wall(0.0f, 800.0f, 0.0f, 400.0f)
+	ball(Vec2(250.0f, 100.0f), Vec2(300.0f, 300.0f)),
+	wall(200.0f, 600.0f, 0.0f, 600.0f)
 {
 }
 

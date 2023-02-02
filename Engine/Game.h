@@ -47,20 +47,17 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables  */
-	//float width = 40.0f;
-	//float height = 20.0f;
-	//static constexpr int nBrickRows = 12;
-	//static constexpr int nBrickCols = 4;
-	//static constexpr int nBricks = nBrickRows + nBrickCols;
-	//Brick brick[nBricks];
-
-	
+	static constexpr float brickWidth = 40.0f;
+	static constexpr float brickHeight = 24.0f;
+	static constexpr int nBrickRows = 12;
+	static constexpr int nBrickCols = 4;
+	static constexpr int nBricks = nBrickRows * nBrickCols;
+	Brick bricks[nBricks];
 	Ball ball;
 	FrameTimer ft;
 	Rect wall;
 	Sound soundWall;
 	Sound soundBrick;
-	Brick bricks;
 	Paddle paddle;
 	/********************************/
 };

@@ -60,6 +60,16 @@ void Ball::reboundY()
 	vel.y = -vel.y;
 }
 
+Vec2 Ball::getPosition()
+{
+	return pos;
+}
+
+Vec2 Ball::getVelocity()
+{
+	return vel;
+}
+
 Rect Ball::getRect() const
 {
 	return Rect::fromCenter(pos, radius, radius);

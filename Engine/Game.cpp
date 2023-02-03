@@ -27,14 +27,16 @@ Game::Game(MainWindow& wnd)
 	wnd(wnd),
 	gfx(wnd),
 	ball(Vec2(300.0f, 300.0f), Vec2(300.0f, 300.0f)),
-	wall(0.0f, 800.0f, 0.0f, 600.0f),
+	wall(Rect(125.0f, 675.0f, 0.0f, 600.0f), Colors::Blue),
 	soundWall(L"Sounds\\arkpad.wav"),
 	soundBrick(L"Sounds\\arkbrick.wav"),
 	paddle(Vec2(400.0f, 500.0f), 50, 15)
 {
 	const Color brickColors[nBrickCols] = {Colors::Red, Colors::Blue, Colors::Green, Colors::Yellow};
 
-	const Vec2 topLeft(0.0f, 0.0f);
+	const float pad = ((wall.getWall().right - wall.getWall().left) - (nBrickRows * brickWidth)) / 2;
+
+	const Vec2 topLeft(wall.getWall().left + pad, wall.getWall().top + pad);
 
 	for (int y = 0; y < nBrickCols; y++)
 	{
@@ -60,7 +62,7 @@ void Game::UpdateModel()
 	ball.update(dt);
 	paddle.update(wnd.kbd, dt);
 
-	if (ball.wallCollision(wall))
+	if (ball.wallCollision(wall.getWall()))
 	{
 		soundWall.Play();
 	}
@@ -74,15 +76,19 @@ void Game::UpdateModel()
 		}
 	}
 
-	paddle.ballCollision(ball);
-	paddle.wallCollision(wall);
+	if (paddle.ballCollision(ball))
+	{
+		soundBrick.Play();
+	}
+
+	
+	paddle.wallCollision(wall.getWall());
 	
 	
 }
 
 void Game::ComposeFrame()
 {
-
 	ball.draw(gfx);
 
 	for (const Brick& brick : bricks)
@@ -91,5 +97,6 @@ void Game::ComposeFrame()
 	}
 
 	paddle.draw(gfx);
+	wall.draw(gfx);
 
 }

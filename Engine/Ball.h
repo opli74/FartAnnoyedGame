@@ -16,10 +16,11 @@ public:
 	Vec2 getPosition();
 	Vec2 getVelocity();
 	Rect getRect() const;
+	Vec2 pos;
 
 private:
 	static constexpr float radius = 7.0f;
 	Vec2 vel;
-	Vec2 pos;
+
 };
 

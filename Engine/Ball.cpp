@@ -24,25 +24,25 @@ bool Ball::wallCollision(const Rect& wall)
 {
 	bool collided = false;
 	const Rect rect = getRect();
-	if (rect.left <= wall.left)
+	if (rect.left < wall.left)
 	{
 		pos.x += wall.left - rect.left;
 		reboundX();
 		collided = true;
 	}
-	else if (rect.right >= wall.right)
+	else if (rect.right > wall.right)
 	{
 		pos.x -= rect.right - wall.right;
 		reboundX();
 		collided = true;
 	}
-	if (rect.top <= wall.top)
+	if (rect.top < wall.top)
 	{
 		pos.y += wall.top - rect.top;
 		reboundY();
 		collided = true;
 	}
-	else if (rect.bottom >= wall.bottom)
+	else if (rect.bottom > wall.bottom)
 	{
 		pos.y -= rect.bottom - wall.bottom;
 		reboundY();
@@ -102,7 +102,7 @@ void Ball::setDirection(const Vec2& vel_)
 	vel = vel_;
 }
 
-void Ball::SetPosition(const Vec2& pos_)
+void Ball::setPosition(const Vec2& pos_)
 {
 	pos += pos_;
 }

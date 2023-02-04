@@ -25,6 +25,8 @@ public:
 	void setPosition(const Vec2& pos_);
 	void switchRestart();
 	Rect getRect() const;
+	void setDirection(const Vec2& vel_);
+	void SetPosition(const Vec2& pos_);
 
 
 private:
@@ -33,6 +35,7 @@ private:
 	Vec2 pos;
 	Vec2 vel;
 	Vec2 prevPos;
+	float speed = 300.0f;
 
 
 };

@@ -1,4 +1,6 @@
 #include "Paddle.h"
+#define _USE_MATH_DEFINES
+#include <Math.h>
 
 Paddle::Paddle(const Vec2& pos, float halfWidth, float halfHeight)
 	:
@@ -18,25 +20,28 @@ bool Paddle::ballCollision(Ball& ball) const
 	if (getRect().isOverLapping(ball.getRect()))
 	{
 		Rect rect = getRect();
-		Vec2 ballPos = ball.prevPosition();
+		Vec2 ballPrevPos = ball.prevPosition();
+		Vec2 ballPos = Vec2(0, 0);
 
-		float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballPos.y - pos.y);
-		float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballPos.x - pos.x);
+		float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballPrevPos.y - pos.y);
+		float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballPrevPos.x - pos.x);
+		float maxBounceAngle = 5 * M_PI / 12.0f;
+
+
 
 		if (wy > hx)
 		{
-			if (wy < -hx)
+			if (wy > -hx)
 			{
-				//left
-				ball.pos.x -= ball.getRect().right - rect.left;
-				ball.reboundX(false);
-
+				//bottom
+				ballPos.y += rect.bottom - ball.getRect().top;
+				ball.reboundY(true);
 			}
 			else
 			{
-				//bottom
-				ball.pos.y += rect.bottom - ball.getRect().top;
-				ball.reboundY(true);
+				//left
+				ballPos.x -= ball.getRect().right - rect.left;
+				ball.reboundX(false);
 			}
 		}
 		else
@@ -44,16 +49,23 @@ bool Paddle::ballCollision(Ball& ball) const
 			if (wy > -hx)
 			{
 				//right
-				ball.pos.x += rect.right - ball.getRect().left;
+				ballPos.x += rect.right - ball.getRect().left;
 				ball.reboundX(true);
 			}
 			else
 			{
 				//top
-				ball.pos.y -= ball.getRect().bottom - rect.top;
+				ballPos.y -= ball.getRect().bottom - rect.top;
 				ball.reboundY(false);
+
+				float relativeIntersect = (pos.x - ball.getPosition().x) * 2;
+				float normalisedRelativeIntersect = (relativeIntersect / ((rect.right - rect.left) / 2));
+				float bounceAngle = normalisedRelativeIntersect * (maxBounceAngle);
+				float ballSpeed = ball.getVelocity().GetLength();
+				ball.setDirection(Vec2(ballSpeed * cos(bounceAngle), ballSpeed * -sin(bounceAngle)));
 			}
 		}
+		ball.SetPosition(ballPos);
 		return true;
 	}
 	return false;

@@ -72,22 +72,22 @@ void Ball::reboundY(const bool& dir)
 		vel.y = -abs(vel.y);
 }
 
-Vec2 Ball::prevPosition()
+Vec2 Ball::prevPosition() const
 {
 	return prevPos;
 }
 
-void Ball::reboundY()
+void Ball::reboundY() 
 {
 	vel.y = -vel.y;
 }
 
-Vec2 Ball::getPosition()
+Vec2 Ball::getPosition() const
 {
 	return pos;
 }
 
-Vec2 Ball::getVelocity()
+Vec2 Ball::getVelocity() const
 {
 	return vel;
 }
@@ -95,6 +95,16 @@ Vec2 Ball::getVelocity()
 Rect Ball::getRect() const
 {
 	return Rect::fromCenter(pos, radius, radius);
+}
+
+void Ball::setDirection(const Vec2& vel_)
+{
+	vel = vel_;
+}
+
+void Ball::SetPosition(const Vec2& pos_)
+{
+	pos += pos_;
 }
 
 

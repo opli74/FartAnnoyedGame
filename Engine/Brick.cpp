@@ -28,24 +28,26 @@ void Brick::executeBallCollision(Ball& ball)
 	//float top = ball.getRect().bottom - rect.top;
 	//float bottom = rect.bottom - ball.getRect().top;
 
-	Vec2 ballPos = ball.prevPosition();
+	Vec2 ballPrevPos = ball.prevPosition();
+	Vec2 ballPos = Vec2(0, 0);
 
-	float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballPos.y - rect.getCenter().y);
-	float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballPos.x - rect.getCenter().x);
+
+	float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballPrevPos.y - rect.getCenter().y);
+	float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballPrevPos.x - rect.getCenter().x);
 
 	if (wy > hx)
 	{
 		if (wy > -hx)
 		{
 			//bottom
-			ball.pos.y += rect.bottom - ball.getRect().top;
+			ballPos.y += rect.bottom - ball.getRect().top;
 			ball.reboundY(true);
 			destroyed = true;
 		}
 		else
 		{
 			//left
-			ball.pos.x -= ball.getRect().right - rect.left;
+			ballPos.x -= ball.getRect().right - rect.left;
 			ball.reboundX(false);
 			destroyed = true;
 		}
@@ -55,19 +57,19 @@ void Brick::executeBallCollision(Ball& ball)
 		if (wy > -hx)
 		{
 			//right
-			ball.pos.x += rect.right - ball.getRect().left;
+			ballPos.x += rect.right - ball.getRect().left;
 			ball.reboundX(true);
 			destroyed = true;
 		}
 		else
 		{
 			//top
-			ball.pos.y -= ball.getRect().bottom - rect.top;
+			ballPos.y -= ball.getRect().bottom - rect.top;
 			ball.reboundY(false);
 			destroyed = true;
 		}
 	}
-	
+	ball.SetPosition(ballPos);
 }
 
 Rect Brick::getRect() const

@@ -17,6 +17,7 @@ void Ball::draw(Graphics& gfx) const
 void Ball::update(float dt)
 {
 	pos += vel * dt;
+	prevPos = pos - (vel * dt);
 }
 
 bool Ball::wallCollision(const Rect& wall)
@@ -53,6 +54,27 @@ bool Ball::wallCollision(const Rect& wall)
 void Ball::reboundX()
 {
 	vel.x = -vel.x;
+}
+
+void Ball::reboundX(const bool& dir)
+{
+	if (dir)
+		vel.x = abs(vel.x);
+	else
+		vel.x = -abs(vel.x);
+}
+
+void Ball::reboundY(const bool& dir)
+{
+	if (dir)
+		vel.y = abs(vel.y);
+	else
+		vel.y = -abs(vel.y);
+}
+
+Vec2 Ball::prevPosition()
+{
+	return prevPos;
 }
 
 void Ball::reboundY()

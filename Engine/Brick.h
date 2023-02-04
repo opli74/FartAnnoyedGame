@@ -12,8 +12,9 @@ public:
 	Brick() = default;
 	Brick(const Rect& rect, Color c);
 	void draw(Graphics& gfx) const;
-	bool isCollidingBall(Ball& ball);
+	bool isCollidingBall(const Ball& ball) const;
 	void executeBallCollision(Ball& ball);
+	Rect getRect() const;
 
 private:
 	static constexpr float padding = 1.0f;

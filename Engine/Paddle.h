@@ -20,7 +20,7 @@ private:
 	Vec2 pos;
 	float halfWidth;
 	float halfHeight;
-	float speed = 300.0f;
+	const float speed = 230.0f;
 
 };
 

@@ -26,13 +26,13 @@ Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd),
-	ball(Vec2(300.0f, 300.0f), Vec2(300.0f, 300.0f)),
+	ball(Vec2(300.0f + 250.0f, 350.0f), Vec2(-250.0f, -250.0f)),
 	wall(Rect(125.0f, 675.0f, 0.0f, 600.0f), Colors::Blue),
 	soundWall(L"Sounds\\arkpad.wav"),
 	soundBrick(L"Sounds\\arkbrick.wav"),
-	paddle(Vec2(400.0f, 500.0f), 50, 15)
+	paddle(Vec2(400.0f, 500.0f), 50, 10)
 {
-	const Color brickColors[nBrickCols] = {Colors::Red, Colors::Blue, Colors::Green, Colors::Yellow};
+	const Color brickColors[nBrickCols] = {Colors::Red, Colors::Blue, Colors::Green, Colors::Yellow, Colors::White, Colors::Magenta};
 
 	const float pad = ((wall.getWall().right - wall.getWall().left) - (nBrickRows * brickWidth)) / 2;
 
@@ -51,14 +51,21 @@ Game::Game(MainWindow& wnd)
 void Game::Go()
 {
 	gfx.BeginFrame();	
-	UpdateModel();
+	float elapsedTime = ft.Mark();
+	while (elapsedTime > 0.0f)
+	{
+		const float dt = std::min(0.0025f, elapsedTime);
+		UpdateModel(dt);
+		elapsedTime -= dt;
+
+	}
 	ComposeFrame();
 	gfx.EndFrame();
 }
 
-void Game::UpdateModel()
+void Game::UpdateModel(float dt)
 {
-	const float dt = ft.Mark();
+
 	ball.update(dt);
 	paddle.update(wnd.kbd, dt);
 
@@ -67,13 +74,37 @@ void Game::UpdateModel()
 		soundWall.Play();
 	}
 
-	for (Brick& brick : bricks)
+	bool collisionHappened = false;
+	float collisionDisSq;
+	int collisionIndex;
+
+	for (int i = 0; i < nBricks; i++)
 	{
-		if (brick.isCollidingBall(ball))
+		if (bricks[i].isCollidingBall(ball))
 		{
+			const float newCollisionDistSq = (ball.getPosition() - bricks[i].getRect().getCenter()).GetLengthSq();
+			if (collisionHappened)
+			{
+				if (newCollisionDistSq < collisionDisSq)
+				{
+					collisionDisSq = newCollisionDistSq;
+					collisionIndex = i;
+				}
+			}
+			else
+			{
+				collisionDisSq = newCollisionDistSq;
+				collisionIndex = i;
+				collisionHappened = true;
+			}
 			soundBrick.Play();
-			break;
 		}
+	}
+
+	if (collisionHappened)
+	{
+		bricks[collisionIndex].executeBallCollision(ball);
+		collisionHappened = false;
 	}
 
 	if (paddle.ballCollision(ball))
@@ -81,10 +112,8 @@ void Game::UpdateModel()
 		soundBrick.Play();
 	}
 
-	
 	paddle.wallCollision(wall.getWall());
-	
-	
+
 }
 
 void Game::ComposeFrame()

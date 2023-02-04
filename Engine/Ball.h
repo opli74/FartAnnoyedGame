@@ -13,14 +13,22 @@ public:
 	bool wallCollision(const Rect& wall);
 	void reboundX();
 	void reboundY();
+	void reboundX(const bool& dir);
+	void reboundY(const bool& dir);
+	Vec2 prevPosition();
 	Vec2 getPosition();
 	Vec2 getVelocity();
 	Rect getRect() const;
+
+public:
 	Vec2 pos;
+	
 
 private:
 	static constexpr float radius = 7.0f;
 	Vec2 vel;
+	Vec2 prevPos;
+
 
 };
 

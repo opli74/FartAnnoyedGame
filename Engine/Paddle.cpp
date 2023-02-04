@@ -15,9 +15,45 @@ void Paddle::draw(Graphics& gfx) const
 
 bool Paddle::ballCollision(Ball& ball) const
 {
-	if (ball.getVelocity().y > 0.0f && getRect().isOverLapping(ball.getRect()))
+	if (getRect().isOverLapping(ball.getRect()))
 	{
-		ball.reboundY();
+		Rect rect = getRect();
+		Vec2 ballPos = ball.prevPosition();
+
+		float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballPos.y - pos.y);
+		float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballPos.x - pos.x);
+
+		if (wy > hx)
+		{
+			if (wy < -hx)
+			{
+				//left
+				ball.pos.x -= ball.getRect().right - rect.left;
+				ball.reboundX(false);
+
+			}
+			else
+			{
+				//bottom
+				ball.pos.y += rect.bottom - ball.getRect().top;
+				ball.reboundY(true);
+			}
+		}
+		else
+		{
+			if (wy > -hx)
+			{
+				//right
+				ball.pos.x += rect.right - ball.getRect().left;
+				ball.reboundX(true);
+			}
+			else
+			{
+				//top
+				ball.pos.y -= ball.getRect().bottom - rect.top;
+				ball.reboundY(false);
+			}
+		}
 		return true;
 	}
 	return false;
@@ -38,6 +74,7 @@ void Paddle::wallCollision(const Rect& wall)
 
 void Paddle::update(const Keyboard& kbd, float dt)
 {
+	
 	if (kbd.KeyIsPressed(VK_LEFT))
 	{
 		pos.x -= speed * dt;

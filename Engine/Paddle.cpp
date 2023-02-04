@@ -58,14 +58,13 @@ bool Paddle::ballCollision(Ball& ball) const
 				ballPos.y -= ball.getRect().bottom - rect.top;
 				ball.reboundY(false);
 
-				float relativeIntersect = (pos.x - ball.getPosition().x) * 2;
-				float normalisedRelativeIntersect = (relativeIntersect / ((rect.right - rect.left) / 2));
-				float bounceAngle = normalisedRelativeIntersect * (maxBounceAngle);
-				float ballSpeed = ball.getVelocity().GetLength();
-				ball.setDirection(Vec2(ballSpeed * cos(bounceAngle), ballSpeed * -sin(bounceAngle)));
+				const float relativeX = ballPrevPos.x - pos.x;
+				const float bounceAngle = relativeX * (2 * M_PI / 5) / (pos.x) + M_PI / 2;
+				ball.setDirection(Vec2( -cosf(bounceAngle) * BALL_SPEED, -sinf(bounceAngle) * BALL_SPEED) );
+				
 			}
 		}
-		ball.SetPosition(ballPos);
+		ball.setPosition(ballPos);
 		return true;
 	}
 	return false;

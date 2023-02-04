@@ -3,6 +3,8 @@
 #include "Vec2.h"
 #include "Graphics.h"
 #include "Rect.h"
+#define BALL_SPEED 300.0f
+
 
 class Ball
 {
@@ -18,19 +20,16 @@ public:
 	Vec2 prevPosition() const;
 	Vec2 getPosition() const;
 	Vec2 getVelocity() const;
-	Rect getRect() const;
 	void setDirection(const Vec2& vel_);
-	void SetPosition(const Vec2& pos_);
+	void setPosition(const Vec2& pos_);
+	Rect getRect() const;
 
-public:
-	Vec2 pos;
-	
 
 private:
 	static constexpr float radius = 7.0f;
+	Vec2 pos;
 	Vec2 vel;
 	Vec2 prevPos;
-	float speed = 300.0f;
 
 
 };

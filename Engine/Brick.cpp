@@ -69,7 +69,7 @@ void Brick::executeBallCollision(Ball& ball)
 			destroyed = true;
 		}
 	}
-	ball.SetPosition(ballPos);
+	ball.setPosition(ballPos);
 }
 
 Rect Brick::getRect() const

@@ -16,6 +16,7 @@ public:
 	void executeBallCollision(Ball& ball);
 	Rect getRect() const;
 
+
 private:
 	static constexpr float padding = 1.0f;
 	Rect rect;

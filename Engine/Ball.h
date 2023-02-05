@@ -3,7 +3,7 @@
 #include "Vec2.h"
 #include "Graphics.h"
 #include "Rect.h"
-#define BALL_SPEED 300.0f
+#define BALL_SPEED 350.0f
 
 
 class Ball

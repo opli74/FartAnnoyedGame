@@ -26,16 +26,14 @@ Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd),
-	ball(Vec2(300.0f + 250.0f, 350.0f), Vec2(-250.0f, -250.0f)),
+	ball(Vec2(300.0f + 250.0f, 350.0f), Vec2(-BALL_SPEED, -BALL_SPEED)),
 	wall(Rect(125.0f, 675.0f, 0.0f, 600.0f), Colors::Blue),
 	soundWall(L"Sounds\\arkpad.wav"),
 	soundBrick(L"Sounds\\arkbrick.wav"),
 	paddle(Vec2(400.0f, 500.0f), 50, 10)
 {
 	const Color brickColors[nBrickCols] = {Colors::Red, Colors::Blue, Colors::Green, Colors::Yellow, Colors::White, Colors::Magenta};
-
 	const float pad = ((wall.getWall().right - wall.getWall().left) - (nBrickRows * brickWidth)) / 2;
-
 	const Vec2 topLeft(wall.getWall().left + pad, wall.getWall().top + pad);
 
 	for (int y = 0; y < nBrickCols; y++)
@@ -57,7 +55,6 @@ void Game::Go()
 		const float dt = std::min(0.0025f, elapsedTime);
 		UpdateModel(dt);
 		elapsedTime -= dt;
-
 	}
 	ComposeFrame();
 	gfx.EndFrame();

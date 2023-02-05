@@ -49,7 +49,7 @@ private:
 	/********************************/
 	/*  User Variables  */
 	static constexpr float brickWidth = 40.0f;
-	static constexpr float brickHeight = 24.0f;
+	static constexpr float brickHeight = 18.0f;
 	static constexpr int nBrickRows = 12;
 	static constexpr int nBrickCols = 6;
 	static constexpr int nBricks = nBrickRows * nBrickCols;

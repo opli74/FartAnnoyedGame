@@ -22,15 +22,8 @@ bool Brick::isCollidingBall(const Ball& ball) const
 
 void Brick::executeBallCollision(Ball& ball)
 {
-
-	//float left = ball.getRect().right - rect.left;
-	//float right = rect.right - ball.getRect().left;
-	//float top = ball.getRect().bottom - rect.top;
-	//float bottom = rect.bottom - ball.getRect().top;
-
 	Vec2 ballPrevPos = ball.prevPosition();
 	Vec2 ballPos = Vec2(0, 0);
-
 
 	float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballPrevPos.y - rect.getCenter().y);
 	float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballPrevPos.x - rect.getCenter().x);

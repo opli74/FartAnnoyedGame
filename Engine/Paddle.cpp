@@ -57,7 +57,7 @@ bool Paddle::ballCollision(Ball& ball) const
 				//top
 				ballPos.y -= ball.getRect().bottom - rect.top;
 				const float relativeX = ballPrevPos.x - pos.x;
-				const float bounceAngle = relativeX * (3 * M_PI / 2) / (pos.x) + M_PI / 2;
+				const float bounceAngle = relativeX * (3 * float(M_PI) / 2) / (pos.x) + float(M_PI) / 2;
 				ball.setDirection(Vec2( -cosf(bounceAngle) * BALL_SPEED, -sinf(bounceAngle) * BALL_SPEED) );
 				
 			}

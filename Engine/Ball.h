@@ -35,7 +35,6 @@ private:
 	Vec2 pos;
 	Vec2 vel;
 	Vec2 prevPos;
-	float speed = 300.0f;
 
 
 };

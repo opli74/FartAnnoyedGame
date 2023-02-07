@@ -35,7 +35,7 @@ Game::Game(MainWindow& wnd)
 
 	const Color brickColors[nBrickCols] = {Colors::Red, Colors::Cyan, Colors::Green, Colors::Yellow, Colors::Magenta};
 	const float pad = ((wall.getWall().right - wall.getWall().left) - (nBrickRows * brickWidth)) / 2;
-	const Vec2 topLeft(wall.getWall().left + pad, (wall.getWall().top + pad * 2));
+	const Vec2 topLeft(wall.getWall().left + pad, (wall.getWall().top + pad + 25.0f));
 
 	int i = 0;
 	for (int y = 0; y < nBrickCols; y++)
@@ -55,6 +55,8 @@ Game::Game(MainWindow& wnd)
 				bricks[x + y * nBrickRows] = Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), brickColors[4], 1);
 			else if(brickArray[i] == 6)
 				bricks[x + y * nBrickRows] = Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::MakeRGB(255, 137, 0), 1);
+			else
+				bricks[x + y * nBrickRows] = Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::MakeRGB(0,0,0), 1);
 
 			i++;
 		}	
@@ -80,7 +82,7 @@ void Game::Go()
 
 void Game::UpdateModel(float dt)
 {
-	start = timer(dt, start, 2.0f);
+	start = timer(dt, start, 1.5f);
 	if (start)
 	{
 		if (!spaceClicked)
@@ -187,9 +189,12 @@ void Game::ComposeFrame()
 	wall.draw(gfx);
 	ball.draw(gfx);
 
+	int i = 0;
 	for (const Brick& brick : bricks)
 	{
-		brick.draw(gfx);
+		if (brickArray[i] != 0)
+			brick.draw(gfx);
+		i++;
 	}
 
 	paddle.draw(gfx);

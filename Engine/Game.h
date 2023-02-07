@@ -54,9 +54,8 @@ private:
 	static constexpr float brickWidth = 40.0f;
 	static constexpr float brickHeight = 18.0f;
 	static constexpr int nBrickRows = 11;
-	static constexpr int nBrickCols = 13;
-	static constexpr int nHardBricks = 3;
-	static constexpr int nBricks = (nBrickRows * nBrickCols) + nHardBricks;
+	static constexpr int nBrickCols = 15;
+	static constexpr int nBricks = (nBrickRows * nBrickCols);
 	Brick bricks[nBricks];
 	Ball ball;
 	FrameTimer ft;
@@ -66,8 +65,11 @@ private:
 	Paddle paddle;
 	Mouse mouse;
 	static constexpr int brickArray[nBricks] = {
+		0, 0, 6, 0, 0, 6, 0, 0, 6, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0,
 		0, 1, 2, 3, 0, 0, 0, 2, 3, 4, 0,
-		1, 2, 3, 4, 5, 6, 2, 3, 4, 5, 1,
+		1, 2, 3, 4, 5, 0, 2, 3, 4, 5, 1,
 		2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2,
 		0, 4, 5, 1, 2, 3, 4, 5, 1, 2, 0,
 		0, 0, 1, 2, 3, 4, 5, 1, 2, 0, 0,
@@ -78,7 +80,6 @@ private:
 		0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 		0, 6, 0, 0, 0, 6, 0, 0, 0, 6, 0,
-		0, 1, 2, 0, 2, 1, 2, 0, 2, 1, 0,
 	};
 	/********************************/
 };

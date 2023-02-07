@@ -25,8 +25,6 @@ public:
 	void setPosition(const Vec2& pos_);
 	void switchRestart();
 	Rect getRect() const;
-	void setDirection(const Vec2& vel_);
-	void SetPosition(const Vec2& pos_);
 
 
 private:

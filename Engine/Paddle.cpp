@@ -12,7 +12,7 @@ Paddle::Paddle(const Vec2& pos, float halfWidth, float halfHeight)
 
 void Paddle::draw(Graphics& gfx) const
 {
-	gfx.DrawRect(getRect(), c);
+	SpriteCodex::DrawPaddle(pos, gfx);
 }
 
 bool Paddle::ballCollision(Ball& ball) const

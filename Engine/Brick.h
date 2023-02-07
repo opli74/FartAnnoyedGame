@@ -20,7 +20,8 @@ public:
 private:
 	static constexpr float padding = 1.0f;
 	Rect rect;
-	Color c;
+	Color c, l, d;
 	bool destroyed = false;
+	float width = 1.0f;
 };
 

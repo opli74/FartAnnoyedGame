@@ -4,6 +4,7 @@
 #include "Ball.h"	
 #include "Vec2.h"
 #include "Keyboard.h"
+#include "SpriteCodex.h"
 
 class Paddle
 {
@@ -20,7 +21,7 @@ private:
 	Vec2 pos;
 	float halfWidth;
 	float halfHeight;
-	const float speed = 250.0f;
+	const float speed = 275.0f;
 
 };
 

@@ -17,7 +17,8 @@ public:
 private:
 	Rect rect;
 	Color c;
-	Color cBevel;
+	Color l;
+	Color d;
 	Color greyOne = Colors::MakeRGB(30, 30, 30);
 	Color greyTwo = Colors::MakeRGB(36, 36, 36);
 	int width = 18;

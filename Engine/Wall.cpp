@@ -13,7 +13,8 @@ Wall::Wall(const Rect& rect, const Color& c)
 
     topLeft = Vec2(rect.left + width, rect.top + width);
 
-    cBevel = Colors::MakeRGB(c.GetR(), c.GetG(), c.GetB() + 50);
+    l = Colors::MakeRGB(175,175,175);
+    d = Colors::MakeRGB(75,75, 75);
 }
 
 Rect Wall::getWall() const
@@ -29,19 +30,38 @@ void Wall::draw(Graphics& gfx) const
 
 void Wall::drawBorder(Graphics& gfx) const
 {
-    //bottom
-    gfx.DrawRect(int(rect.left), int(rect.bottom - width / 2), int(rect.right), int(rect.bottom - width), c);
-    gfx.DrawRect(int(rect.left), int(rect.bottom  - width / 2), int(rect.right), int(rect.bottom), cBevel);
 
-    //top
-    gfx.DrawRect(int(rect.left), int(rect.top), int(rect.right), int(rect.top + width / 2), cBevel);
-    gfx.DrawRect(int(rect.left), int(rect.top + width / 2), int(rect.right), int(rect.top + width), c);
     //right
-    gfx.DrawRect(int(rect.right), int(rect.top), int(rect.right - width / 2), int(rect.bottom), c);
-    gfx.DrawRect(int(rect.right - width / 2), int(rect.top), int(rect.right - width), int(rect.bottom), cBevel);
+    gfx.DrawRect(int(rect.right - width), int(rect.top), int(rect.right), int(rect.bottom), c);
+    //right
+    gfx.DrawRect(int(rect.right - width), int(rect.top + width), int(rect.right - width) + 2, int(rect.bottom - width) , d);
 
     //left
     gfx.DrawRect(int(rect.left), int(rect.top), int(rect.left + width), int(rect.bottom), c);
+    //left
+    gfx.DrawRect(int(rect.left + width), int(rect.top + width), int(rect.left + width) - 2, int(rect.bottom - width) , l);
+
+    //bottom
+    gfx.DrawRect(int(rect.left), int(rect.bottom - width), int(rect.right), int(rect.bottom), c);
+    //bottom
+    gfx.DrawRect(int(rect.left + width), int(rect.bottom - width), int(rect.right - width) + 2, int(rect.bottom - width) + 2, d);
+
+    //top
+    gfx.DrawRect(int(rect.left), int(rect.top), int(rect.right), int(rect.top + width), c);
+    //top
+    gfx.DrawRect(int(rect.left + width) - 2, int(rect.top + width), int(rect.right - width), int(rect.top + width) - 2, l);
+    
+
+    //bottom
+    gfx.DrawRect(int(rect.left), int(rect.bottom - 2), int(rect.right), int(rect.bottom), d);
+    //right
+    gfx.DrawRect(int(rect.right), int(rect.top), int(rect.right - 2), int(rect.bottom), d);
+    //left
+    gfx.DrawRect(int(rect.left), int(rect.top), int(rect.left + 2), int(rect.bottom), l);
+    //top
+    gfx.DrawRect(int(rect.left), int(rect.top), int(rect.right), int(rect.top + 2), l);
+
+
 }
 
 void Wall::drawBackground(Graphics& gfx) const

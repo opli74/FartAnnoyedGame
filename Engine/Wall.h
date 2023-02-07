@@ -17,8 +17,8 @@ public:
 private:
 	Rect rect;
 	Color c;
-	Color l;
-	Color d;
+	Color l = Colors::MakeRGB(175, 175, 175);
+	Color d = Colors::MakeRGB(75, 75, 75);
 	Color greyOne = Colors::MakeRGB(30, 30, 30);
 	Color greyTwo = Colors::MakeRGB(36, 36, 36);
 	int width = 18;

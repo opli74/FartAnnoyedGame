@@ -12,9 +12,6 @@ Wall::Wall(const Rect& rect, const Color& c)
     cellH = h / float(cellY);
 
     topLeft = Vec2(rect.left + width, rect.top + width);
-
-    l = Colors::MakeRGB(175,175,175);
-    d = Colors::MakeRGB(75,75, 75);
 }
 
 Rect Wall::getWall() const

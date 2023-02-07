@@ -12,7 +12,7 @@ Paddle::Paddle(const Vec2& pos, float halfWidth, float halfHeight)
 
 void Paddle::draw(Graphics& gfx) const
 {
-	gfx.DrawRect(getRect(), c);
+	SpriteCodex::DrawPaddle(pos, gfx);
 }
 
 bool Paddle::ballCollision(Ball& ball) const
@@ -56,16 +56,14 @@ bool Paddle::ballCollision(Ball& ball) const
 			{
 				//top
 				ballPos.y -= ball.getRect().bottom - rect.top;
-				ball.reboundY(false);
-
-				float relativeIntersect = (pos.x - ball.getPosition().x) * 2;
-				float normalisedRelativeIntersect = (relativeIntersect / ((rect.right - rect.left) / 2));
-				float bounceAngle = normalisedRelativeIntersect * (maxBounceAngle);
-				float ballSpeed = ball.getVelocity().GetLength();
-				ball.setDirection(Vec2(ballSpeed * cos(bounceAngle), ballSpeed * -sin(bounceAngle)));
+				const float relativeX = ballPrevPos.x - pos.x;
+				const float bounceAngle = relativeX * (3 * float(M_PI) / 2) / (pos.x) + float(M_PI) / 2;
+				ball.setDirection(Vec2( -cosf(bounceAngle) * BALL_SPEED, -sinf(bounceAngle) * BALL_SPEED) );
+				
 			}
 		}
-		ball.SetPosition(ballPos);
+		ballPrevPos += ballPos;
+		ball.setPosition(ballPrevPos);
 		return true;
 	}
 	return false;
@@ -100,4 +98,14 @@ void Paddle::update(const Keyboard& kbd, float dt)
 Rect Paddle::getRect() const
 {
 	return Rect::fromCenter(pos, halfWidth, halfHeight);
+}
+
+Vec2 Paddle::getVec() const
+{
+	return pos;
+}
+
+void Paddle::setPos(const Vec2& pos_)
+{
+	pos = pos_;
 }

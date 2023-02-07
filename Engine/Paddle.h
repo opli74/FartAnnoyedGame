@@ -4,6 +4,7 @@
 #include "Ball.h"	
 #include "Vec2.h"
 #include "Keyboard.h"
+#include "SpriteCodex.h"
 
 class Paddle
 {
@@ -14,13 +15,15 @@ public:
 	void wallCollision(const Rect& wall);
 	void update(const Keyboard& kdb, float dt);
 	Rect getRect() const;
+	Vec2 getVec() const;
+	void setPos(const Vec2& pos);
 
 private:
 	Color c = Colors::White;
 	Vec2 pos;
 	float halfWidth;
 	float halfHeight;
-	const float speed = 250.0f;
+	const float speed = 275.0f;
 
 };
 

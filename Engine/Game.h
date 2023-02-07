@@ -38,6 +38,7 @@ public:
 	Game& operator=( const Game& ) = delete;
 	void Go();
 private:
+	bool timer(float dt, bool& operations, float amountTime);
 	void ComposeFrame();
 	void UpdateModel(float dt);
 	/********************************/
@@ -48,11 +49,14 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables  */
+	bool start = false, spaceClicked = false;
+	float time = 0.0f;
 	static constexpr float brickWidth = 40.0f;
 	static constexpr float brickHeight = 18.0f;
-	static constexpr int nBrickRows = 12;
-	static constexpr int nBrickCols = 6;
-	static constexpr int nBricks = nBrickRows * nBrickCols;
+	static constexpr int nBrickRows = 11;
+	static constexpr int nBrickCols = 12;
+	static constexpr int nHardBricks = 3;
+	static constexpr int nBricks = (nBrickRows * nBrickCols) + nHardBricks;
 	Brick bricks[nBricks];
 	Ball ball;
 	FrameTimer ft;
@@ -61,5 +65,20 @@ private:
 	Sound soundBrick;
 	Paddle paddle;
 	Mouse mouse;
+	static constexpr int brickArray[nBricks] = {
+		0, 1, 2, 3, 0, 0, 0, 2, 3, 4, 0,
+		1, 2, 3, 4, 5, 0, 2, 3, 4, 5, 1,
+		2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2,
+		0, 4, 5, 1, 2, 3, 4, 5, 1, 2, 0,
+		0, 0, 1, 2, 3, 4, 5, 1, 2, 0, 0,
+		0, 0, 2, 3, 4, 5, 1, 2, 3, 0, 0,
+		0, 0, 0, 4, 5, 1, 2, 3, 0, 0, 0,
+		0, 0, 0, 5, 1, 2, 3, 4, 0, 0, 0,
+		0, 0, 0, 0, 2, 3, 4, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		0, 6, 0, 0, 0, 6, 0, 0, 0, 6, 0,
+		
+	};
 	/********************************/
 };

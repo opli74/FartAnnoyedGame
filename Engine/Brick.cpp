@@ -30,7 +30,7 @@ bool Brick::isCollidingBall(const Ball& ball) const
 	return !destroyed && rect.isOverLapping(ball.getRect());
 }
 
-void Brick::executeBallCollision(Ball& ball)
+void Brick::executeBallCollision(Ball& ball, const bool& type)
 {
 	Vec2 ballPrevPos = ball.prevPosition();
 	Vec2 ballPos = Vec2(0, 0);
@@ -72,7 +72,11 @@ void Brick::executeBallCollision(Ball& ball)
 			destroyed = true;
 		}
 	}
-	ball.setPosition(ballPos);
+	if (type)
+		destroyed = false;
+
+	ballPrevPos += ballPos;
+	ball.setPosition(ballPrevPos);
 }
 
 Rect Brick::getRect() const

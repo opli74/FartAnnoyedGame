@@ -61,7 +61,6 @@ void Wall::drawBorder(Graphics& gfx) const
     //top
     gfx.DrawRect(int(rect.left), int(rect.top), int(rect.right), int(rect.top + 2), l);
 
-
 }
 
 void Wall::drawBackground(Graphics& gfx) const
@@ -72,12 +71,22 @@ void Wall::drawBackground(Graphics& gfx) const
         {
             if (y % 2 == 0)
                 if (x % 2 == 0)
+                {
                     gfx.DrawRect(Rect(topLeft + Vec2((x * cellW), (y * cellH)), cellW, cellH), greyOne);
+                    gfx.DrawRect(Rect(topLeft + Vec2((x * cellW) + 1, (y * cellH) + 1), cellW - 1, 1), d);
+                    gfx.DrawRect(Rect(topLeft + Vec2((x * cellW) + 1, (y * cellH) + 1), 1, cellH - 1), d);
+                }
+
                 else
                     gfx.DrawRect(Rect(topLeft + Vec2((x * cellW), (y * cellH)), cellW, cellH), greyTwo);
             else
                 if (x % 2 != 0)
+                {
                     gfx.DrawRect(Rect(topLeft + Vec2((x * cellW), (y * cellH)), cellW, cellH), greyOne);
+                    gfx.DrawRect(Rect(topLeft + Vec2((x * cellW) + 1, (y * cellH) + 1), cellW - 1, 1), d);
+                    gfx.DrawRect(Rect(topLeft + Vec2((x * cellW) + 1, (y * cellH) + 1), 1, cellH - 1), d);
+                }
+
                 else
                     gfx.DrawRect(Rect(topLeft + Vec2((x * cellW), (y * cellH)), cellW, cellH), greyTwo);
 

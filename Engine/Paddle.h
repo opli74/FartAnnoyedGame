@@ -15,6 +15,8 @@ public:
 	void wallCollision(const Rect& wall);
 	void update(const Keyboard& kdb, float dt);
 	Rect getRect() const;
+	Vec2 getVec() const;
+	void setPos(const Vec2& pos);
 
 private:
 	Color c = Colors::White;

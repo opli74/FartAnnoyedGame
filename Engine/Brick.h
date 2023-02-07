@@ -13,7 +13,7 @@ public:
 	Brick(const Rect& rect, Color c);
 	void draw(Graphics& gfx) const;
 	bool isCollidingBall(const Ball& ball) const;
-	void executeBallCollision(Ball& ball);
+	void executeBallCollision(Ball& ball, const bool& type);
 	Rect getRect() const;
 
 

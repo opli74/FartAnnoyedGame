@@ -62,7 +62,8 @@ bool Paddle::ballCollision(Ball& ball) const
 				
 			}
 		}
-		ball.setPosition(ballPos);
+		ballPrevPos += ballPos;
+		ball.setPosition(ballPrevPos);
 		return true;
 	}
 	return false;
@@ -97,4 +98,14 @@ void Paddle::update(const Keyboard& kbd, float dt)
 Rect Paddle::getRect() const
 {
 	return Rect::fromCenter(pos, halfWidth, halfHeight);
+}
+
+Vec2 Paddle::getVec() const
+{
+	return pos;
+}
+
+void Paddle::setPos(const Vec2& pos_)
+{
+	pos = pos_;
 }

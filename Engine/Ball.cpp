@@ -16,37 +16,36 @@ void Ball::draw(Graphics& gfx) const
 
 void Ball::update(float dt)
 {
-	pos += vel * dt;
+	pos += (vel.GetNormalized() * BALL_SPEED) * dt;
+
 	prevPos = pos - (vel * dt);
 }
 
-bool Ball::wallCollision(const Rect& wall)
+int Ball::wallCollision(const Rect& wall)
 {
-	bool collided = false;
+	int collided = 0;
 	const Rect rect = getRect();
 	if (rect.left < wall.left)
 	{
 		pos.x += wall.left - rect.left;
 		reboundX();
-		collided = true;
+		collided = 1;
 	}
 	else if (rect.right > wall.right)
 	{
 		pos.x -= rect.right - wall.right;
 		reboundX();
-		collided = true;
+		collided = 1;
 	}
 	if (rect.top < wall.top)
 	{
 		pos.y += wall.top - rect.top;
 		reboundY();
-		collided = true;
+		collided = 1;
 	}
 	else if (rect.bottom > wall.bottom)
 	{
-		pos.y -= rect.bottom - wall.bottom;
-		reboundY();
-		collided = true;
+		restart = true;
 	}
 	return collided;
 }
@@ -92,6 +91,11 @@ Vec2 Ball::getVelocity() const
 	return vel;
 }
 
+bool Ball::getRestart() const
+{
+	return restart;
+}
+
 Rect Ball::getRect() const
 {
 	return Rect::fromCenter(pos, radius, radius);
@@ -104,7 +108,12 @@ void Ball::setDirection(const Vec2& vel_)
 
 void Ball::setPosition(const Vec2& pos_)
 {
-	pos += pos_;
+	pos = pos_;
+}
+
+void Ball::switchRestart()
+{
+	restart = !restart;
 }
 
 

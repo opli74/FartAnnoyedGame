@@ -48,17 +48,17 @@ float Vec2::GetLengthSq() const
 	return x * x + y * y;
 }
 
-Vec2& Vec2::Normalize(const float& norm)
+Vec2& Vec2::Normalize()
 {
-	return *this = GetNormalized(norm);
+	return *this = GetNormalized();
 }
 
-Vec2 Vec2::GetNormalized(const float& norm) const
+Vec2 Vec2::GetNormalized() const
 {
 	const float len = GetLength();
 	if( len != 0.0f )
 	{
-		return *this * (norm / len);
+		return *this * (1.0f / len);
 	}
 	return *this;
 }

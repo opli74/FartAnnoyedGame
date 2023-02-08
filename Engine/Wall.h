@@ -11,23 +11,26 @@ public:
 	Rect getWall() const;
 	void draw(Graphics& gfx) const;
 	void drawBorder(Graphics& gfx) const;
+	void drawLines(Graphics& gfx) const;
 	void drawBackground(Graphics& gfx) const;
 
 
 private:
 	Rect rect;
 	Color c;
-	Color l = Colors::MakeRGB(175, 175, 175);
-	Color d = Colors::MakeRGB(75, 75, 75);
+	Color borderL = Colors::MakeRGB(165, 165, 165);
+	Color borderD = Colors::MakeRGB(75, 75, 75);
+	Color l = Colors::MakeRGB(65, 65, 65);
+	Color d = Colors::MakeRGB(45, 45, 45);
 	Color greyOne = Colors::MakeRGB(30, 30, 30);
 	Color greyTwo = Colors::MakeRGB(36, 36, 36);
-	int width = 18;
+	float width = 18.0f;
 
-	int cellX = 14;
-	int cellY = 14;
+	int cellX = 18;
+	int cellY = 18;
 
-	int w;
-	int h;
+	float w;
+	float h;
 
 	float cellW;
 	float cellH;

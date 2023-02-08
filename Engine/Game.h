@@ -29,6 +29,10 @@
 #include "Sound.h"
 #include "Paddle.h"
 #include "Wall.h"
+#include "Screen.h"
+#include "PowerUp.h"
+
+#include <random>
 
 class Game
 {
@@ -41,6 +45,7 @@ private:
 	bool timer(float dt, bool& operations, float amountTime);
 	void ComposeFrame();
 	void UpdateModel(float dt);
+	void reset();
 	/********************************/
 	/*  User Functions              */
 	/********************************/
@@ -49,14 +54,16 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables  */
-	bool start = false, spaceClicked = false;
+	bool start = false, spaceClicked = false, collisionHappenedGlobal = false;
 	float time = 0.0f;
 	static constexpr float brickWidth = 40.0f;
 	static constexpr float brickHeight = 18.0f;
-	static constexpr int nBrickRows = 11;
-	static constexpr int nBrickCols = 15;
-	static constexpr int nBricks = (nBrickRows * nBrickCols);
-	Brick bricks[nBricks];
+	int nBrickRows;
+	int nBrickCols;
+	int nBricks;
+	std::vector<Brick> bricks;
+	std::vector<PowerUp> powers;
+	//Brick bricks[nBricks];
 	Ball ball;
 	FrameTimer ft;
 	Wall wall;
@@ -64,22 +71,83 @@ private:
 	Sound soundBrick;
 	Paddle paddle;
 	Mouse mouse;
-	static constexpr int brickArray[nBricks] = {
-		0, 0, 6, 0, 0, 6, 0, 0, 6, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0,
-		0, 1, 2, 3, 0, 0, 0, 2, 3, 4, 0,
-		1, 2, 3, 4, 5, 0, 2, 3, 4, 5, 1,
-		2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2,
-		0, 4, 5, 1, 2, 3, 4, 5, 1, 2, 0,
-		0, 0, 1, 2, 3, 4, 5, 1, 2, 0, 0,
-		0, 0, 2, 3, 4, 5, 1, 2, 3, 0, 0,
-		6, 0, 0, 4, 5, 1, 2, 3, 0, 0, 6,
-		0, 0, 0, 5, 1, 2, 3, 4, 0, 0, 0,
-		0, 0, 0, 0, 2, 3, 4, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 6, 0, 0, 0, 6, 0, 0, 0, 6, 0,
+	Screen firstLevel, secondLevel;
+
+	int current2dIndex = 0;
+
+
+	bool pressed = false;
+
+	int destroyed = 0;
+	int indestructable = 0;
+	int nonBrickAmount = 0;
+	const Color brickColors[5] = { Colors::Red, Colors::Cyan, Colors::Green, Colors::Yellow, Colors::Magenta };
+	float padX;
+	float padY;
+	Vec2 topLeft;
+
+	std::vector<std::vector<std::vector<int>>> brickArray = {
+
+		{ 
+			{11, 5},
+
+			{
+			0, 0, 1, 0, 1, 7, 1, 0, 1, 0, 0,
+			2, 2, 0, 2, 0, 0, 0, 2, 0, 2, 2,
+			0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0,
+			4, 4, 0, 4, 0, 7, 0, 4, 0, 4, 4,
+			0, 0, 5, 0, 5, 5, 5, 0, 5, 0, 0,
+			}
+
+		},
+
+		{
+			{11, 15},
+
+			{
+			0, 0, 6, 0, 0, 6, 0, 0, 6, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0,
+			0, 1, 2, 7, 0, 0, 0, 7, 3, 4, 0,
+			7, 2, 3, 4, 5, 0, 2, 3, 4, 5, 7,
+			7, 3, 4, 5, 1, 2, 3, 4, 5, 1, 7,
+			0, 4, 5, 1, 2, 3, 4, 5, 1, 2, 0,
+			0, 0, 1, 2, 3, 4, 5, 1, 2, 0, 0,
+			0, 0, 2, 3, 4, 5, 1, 2, 3, 0, 0,
+			6, 0, 0, 4, 5, 1, 2, 3, 0, 0, 6,
+			0, 0, 0, 5, 1, 2, 3, 4, 0, 0, 0,
+			0, 0, 0, 0, 2, 3, 4, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0, 6, 0, 0, 0, 6, 0, 0, 0, 6, 0,
+			}
+
+		},
+
+		{
+			{11, 17},
+
+			{
+			0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 
+			0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0, 
+			0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 
+			0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 
+			0, 0, 7, 7, 7, 7, 7, 7, 7, 0, 0, 
+			0, 0, 7, 7, 7, 7, 7, 7, 7, 0, 0, 
+			0, 7, 7, 1, 7, 7, 7, 1, 7, 7, 0, 
+			0, 7, 7, 1, 7, 7, 7, 1, 7, 7, 0, 
+			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 
+			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 
+			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 
+			7, 0, 7, 7, 7, 7, 7, 7, 7, 0, 7, 
+			7, 0, 7, 0, 0, 0, 0, 0, 7, 0, 7, 
+			7, 0, 7, 0, 0, 0, 0, 0, 7, 0, 7, 
+			7, 0, 7, 0, 0, 0, 0, 0, 7, 0, 7, 
+			0, 0, 0, 7, 7, 0, 7, 7, 0, 0, 0, 
+			0, 0, 0, 7, 7, 0, 7, 7, 0, 0, 0,
+			}
+
+		}
 	};
 	/********************************/
 };

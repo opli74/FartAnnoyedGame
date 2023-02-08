@@ -16,7 +16,7 @@ void Ball::draw(Graphics& gfx) const
 
 void Ball::update(float dt)
 {
-	pos += (vel.GetNormalized() * BALL_SPEED) * dt;
+	pos += vel * dt;
 
 	prevPos = pos - (vel * dt);
 }

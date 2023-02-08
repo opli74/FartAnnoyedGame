@@ -105,6 +105,11 @@ Rect Brick::getRect() const
 	return rect;
 }
 
+bool Brick::getDestroyed() const
+{
+	return destroyed;
+}
+
 void Brick::color()
 {
 	if (hit)

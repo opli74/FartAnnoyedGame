@@ -17,6 +17,7 @@ public:
 	Color getColor() const;
 	void setColor(const Color& in);
 	Rect getRect() const;
+	bool getDestroyed() const;
 	void color();
 
 public:

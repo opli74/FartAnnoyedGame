@@ -11,7 +11,7 @@ class Paddle
 public:
 	Paddle(const Vec2& pos, float halfWidth, float halfHeight);
 	void draw(Graphics& gfx) const;
-	bool ballCollision(Ball& ball) const;
+	bool ballCollision(Ball& ball);
 	void wallCollision(const Rect& wall);
 	void update(const Keyboard& kdb, float dt);
 	Rect getRect() const;
@@ -23,7 +23,7 @@ private:
 	Vec2 pos;
 	float halfWidth;
 	float halfHeight;
-	const float speed = 275.0f;
-
+	const float speed = BALL_SPEED;
+	bool test = false;
 };
 

@@ -1,11 +1,14 @@
 #include "Brick.h"
 
-Brick::Brick(const Rect& rect, Color c, const int health)
+Brick::Brick(const Rect& rect, Color c, const int health, bool type)
 	:
 	rect(rect),
 	c(c),
-	health(health)
+	health(health),
+	type( type )
 {
+	if ( health == 0 )
+		destroyed = true;
 }
 	
 void Brick::draw(Graphics& gfx) const
@@ -29,16 +32,24 @@ void Brick::draw(Graphics& gfx) const
 
 bool Brick::isCollidingBall(const Ball& ball)
 {
-	if (!destroyed && rect.isOverLapping(ball.getRect()))
+	if ( type )
 	{
-		return true;
-		
+		destroyed = false;
 	}
-	return false;
-	
+	else if ( health > 0 )
+	{
+		destroyed = false;
+	}
+	else
+	{
+		destroyed = true;
+	}
+
+	return ( !destroyed && rect.isOverLapping( ball.getRect( ) ) );
 }
 
-void Brick::executeBallCollision(Ball& ball, const bool& type)
+
+void Brick::executeBallCollision(Ball& ball)
 {
 	Vec2 ballPrevPos = ball.prevPosition();
 	Vec2 ballPos = Vec2(0, 0);
@@ -53,14 +64,14 @@ void Brick::executeBallCollision(Ball& ball, const bool& type)
 			//bottom
 			ballPos.y += rect.bottom - ball.getRect().top;
 			ball.reboundY(true);
-			health -= 1;
+			health--;
 		}
 		else
 		{
 			//left
 			ballPos.x -= ball.getRect().right - rect.left;
 			ball.reboundX(false);
-			health -= 1;
+			health--;
 		}
 	}
 	else
@@ -70,24 +81,24 @@ void Brick::executeBallCollision(Ball& ball, const bool& type)
 			//right
 			ballPos.x += rect.right - ball.getRect().left;
 			ball.reboundX(true);
-			health -= 1;
+			health--;
 		}
 		else
 		{
 			//top
 			ballPos.y -= ball.getRect().bottom - rect.top;
 			ball.reboundY(false);
-			health -= 1;
+			health--;
 		}
 	}
-	
-	if (health > 0 || type)
-		destroyed = false;
-	else
-		destroyed = true;
 
 	ballPrevPos += ballPos;
 	ball.setPosition(ballPrevPos);
+}
+
+void Brick::collision( )
+{
+	health--;
 }
 
 Color Brick::getColor() const
@@ -105,8 +116,20 @@ Rect Brick::getRect() const
 	return rect;
 }
 
-bool Brick::getDestroyed() const
+bool Brick::getDestroyed()
 {
+	if ( type )
+	{
+		destroyed = false;
+	}
+	else if ( health > 0 )
+	{
+		destroyed = false;
+	}
+	else
+	{
+		destroyed = true;
+	}
 	return destroyed;
 }
 

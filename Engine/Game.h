@@ -42,10 +42,10 @@ public:
 	Game& operator=( const Game& ) = delete;
 	void Go();
 private:
-	bool timer(float dt, bool& operations, float amountTime);
 	void ComposeFrame();
 	void UpdateModel(float dt);
 	void reset();
+	void checkPower( );
 	/********************************/
 	/*  User Functions              */
 	/********************************/
@@ -55,7 +55,7 @@ private:
 	/********************************/
 	/*  User Variables  */
 	bool start = false, spaceClicked = false, collisionHappenedGlobal = false;
-	float time = 0.0f;
+
 	static constexpr float brickWidth = 40.0f;
 	static constexpr float brickHeight = 18.0f;
 	int nBrickRows;
@@ -63,7 +63,6 @@ private:
 	int nBricks;
 	std::vector<Brick> bricks;
 	std::vector<PowerUp> powers;
-	//Brick bricks[nBricks];
 	Ball ball;
 	FrameTimer ft;
 	Wall wall;
@@ -75,13 +74,12 @@ private:
 
 	int current2dIndex = 0;
 
-
 	bool pressed = false;
 
 	int destroyed = 0;
 	int indestructable = 0;
 	int nonBrickAmount = 0;
-	const Color brickColors[5] = { Colors::Red, Colors::Cyan, Colors::Green, Colors::Yellow, Colors::Magenta };
+	static constexpr Color brickColors[5] = { Colors::Red, Colors::Cyan, Colors::Green, Colors::Yellow, Colors::Magenta };
 	float padX;
 	float padY;
 	Vec2 topLeft;

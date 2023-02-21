@@ -353,6 +353,22 @@ void Graphics::DrawCircle( int x,int y,int radius,Color c )
 	}
 }
 
+bool Graphics::timer( float dt , bool& operations , float amountTime )
+{
+	amountTime = amountTime * 60.0f;
+	if ( !operations )
+	{
+		time += dt * 60.0f;
+
+		if ( time >= amountTime )
+		{
+			time = 0.0f;
+			return !operations;
+		}
+
+	}
+	return operations;
+}
 
 //////////////////////////////////////////////////
 //           Graphics Exception

@@ -42,41 +42,7 @@ Game::Game(MainWindow& wnd)
 	soundBrick(L"Sounds\\arkbrick.wav"),
 	paddle(Vec2(400.0f, 500.0f), 50, 8)
 {
-	nBrickCols = brickArray[current2dIndex][0][1];
-	nBrickRows = brickArray[current2dIndex][0][0];
-	nBricks = nBrickCols * nBrickRows;
-
-	const Color brickColors[5] = {Colors::Red, Colors::Cyan, Colors::Green, Colors::Yellow, Colors::Magenta};
-	padX = ((wall.getWall().right - wall.getWall().left) - (nBrickRows * brickWidth)) / 2;
-	padY = ((wall.getWall().bottom - wall.getWall().top) - (nBrickCols * brickHeight)) / 3;
-	topLeft = Vec2((wall.getWall().left + padX), (wall.getWall().top + padY));
-
-	int i = 0;
-	for (int y = 0; y < nBrickCols; y++)
-	{
-		for (int x = 0; x < nBrickRows; x++)
-		{
-			if (brickArray[current2dIndex][1][i] > 0 && brickArray[current2dIndex][1][i] < 6)
-			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), brickColors[(brickArray[current2dIndex][1][i]) - 1], 1));
-			}
-			else if (brickArray[current2dIndex][1][i] == 6)
-			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::MakeRGB(255, 137, 0), 1));
-				indestructable++;
-			}
-			else if (brickArray[current2dIndex][1][i] == 7)
-			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Gray, 2));
-			}
-			else
-			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Black, 0));
-				nonBrickAmount++;
-			}
-			i++;
-		}	
-	}
+	reset( );
 	
 	firstLevel.makeActive();
 }
@@ -99,7 +65,7 @@ void Game::Go()
 
 void Game::UpdateModel(float dt)
 {
-	start = timer(dt, start, 1.5f);
+	start = gfx.timer(dt, start, 1.5f);
 
 	if (wnd.kbd.KeyIsPressed('1'))
 	{
@@ -156,6 +122,7 @@ void Game::UpdateModel(float dt)
 
 		paddle.update(wnd.kbd, dt);
 
+
 		if (ball.wallCollision(wall.getWall()) == 1)
 		{
 			soundWall.Play();
@@ -198,52 +165,76 @@ void Game::UpdateModel(float dt)
 						collisionIndex = i;
 						collisionHappened = true;
 					}
-					soundBrick.Play();
-
+				}
+			}
+			for ( PowerUp& power : powers )
+			{
+				for ( int f = 0; f < power.bullets.size(); f++ )
+				{
+					if ( power.bullets[ f ].brickCollision( bricks[ i ] ) )
+					{
+						bricks[ i ].hit = true;
+						soundBrick.Play( );
+						if ( bricks[ i ].getDestroyed( ) )
+							destroyed++;
+					}
+						
 				}
 			}
 		}
 
 		if (collisionHappened)
 		{
+			soundBrick.Play( );
+
 			if (brickArray[current2dIndex][1][collisionIndex] == 6)
 			{
-				bricks[collisionIndex].executeBallCollision(ball, true);
+				bricks[collisionIndex].executeBallCollision(ball);
 			}
 			else
 			{
-				bricks[collisionIndex].executeBallCollision(ball, false);
+				bricks[collisionIndex].executeBallCollision(ball);
 			}
 			
 			if (bricks[collisionIndex].getDestroyed())
 			{
-				if (Random::getInt(1, 5) == 5)
+				if ( powers.size( ) == 0 )
 				{
-					powers.push_back(PowerUp(bricks[collisionIndex].getRect()));
+					if ( Random::getInt( 1 , 2 ) == 1 )
+					{
+						powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) ) );
+					}
 				}
 				destroyed++;
 			}
 				
-
 			bricks[collisionIndex].hit = true;
 			collisionHappenedGlobal = true;
 		}
 
+		/*paddle.ballCollision( ball );*/
 		if (paddle.ballCollision(ball))
 		{
 			soundBrick.Play();
 		}
 
-		for (PowerUp& power : powers)
-		{
-			power.update(dt);
-			power.paddleCollision(paddle);
-			power.wallCollision(wall.getWall());
-		}
 		paddle.wallCollision(wall.getWall());
+
+		for ( PowerUp& power : powers )
+		{
+			power.update( dt );
+			power.wallCollision( wall.getWall( ) );
+
+			if ( power.paddleCollision( paddle ) )
+				power.givePower( );
+
+			if ( power.getPower( ) )
+			{
+				power.updateBullets( dt , wall.getWall( ) );
+				power.shot( paddle , wnd.kbd , dt );
+			}
+		}
 	}
-
-
 }
 
 void Game::reset()
@@ -264,7 +255,12 @@ void Game::reset()
 	}
 	topLeft = Vec2((wall.getWall().left + padX), (wall.getWall().top + padY));
 
-	bricks.clear();
+	bricks.clear( );
+	for ( PowerUp& e : powers )
+	{
+		e.bullets.clear( );
+	}
+	powers.clear( );
 
 	int i = 0;
 	for (int y = 0; y < nBrickCols; y++)
@@ -273,20 +269,20 @@ void Game::reset()
 		{
 			if (brickArray[current2dIndex][1][i] > 0 && brickArray[current2dIndex][1][i] < 6)
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), brickColors[(brickArray[current2dIndex][1][i]) - 1], 1));
+				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), brickColors[(brickArray[current2dIndex][1][i]) - 1], 1, false));
 			}
 			else if (brickArray[current2dIndex][1][i] == 6)
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::MakeRGB(255, 137, 0), 1));
+				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::MakeRGB(255, 137, 0), 1, true));
 				indestructable++;
 			}
 			else if (brickArray[current2dIndex][1][i] == 7)
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Gray, 2));
+				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Gray, 2, false));
 			}
 			else
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Black, 0));
+				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Black, 0, false));
 				nonBrickAmount++;
 			}
 			i++;
@@ -294,22 +290,7 @@ void Game::reset()
 	}
 }
 
-bool Game::timer(float dt, bool& operations, float amountTime)
-{
-	amountTime = amountTime * 60.0f;
-	if (!operations)
-	{
-		time += dt * 60.0f;
 
-		if (time >= amountTime)
-		{
-			time = 0.0f;
-			return !operations;
-		}
-
-	}
-	return operations;
-}
 
 void Game::ComposeFrame()
 {
@@ -317,20 +298,21 @@ void Game::ComposeFrame()
 	wall.draw(gfx);
 	ball.draw(gfx);
 
-	int i = 0;
 	for (const Brick& brick : bricks)
 	{
-		if (brickArray[current2dIndex][1][i] != 0)
-			brick.draw(gfx);
-		i++;
+		brick.draw(gfx);
 	}
 
-	for (const PowerUp& power : powers)
+	for ( PowerUp& power : powers)
 	{
 		power.draw(gfx);
+
+		if ( power.getPower( ) )
+		{
+			power.drawBullets( gfx );
+		}
 	}
 
 	paddle.draw(gfx);
-
 
 }

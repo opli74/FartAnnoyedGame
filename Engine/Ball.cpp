@@ -2,11 +2,11 @@
 #include "SpriteCodex.h"
 #include <assert.h>
 
-Ball::Ball(const Vec2& pos, const Vec2& vel)
+Ball::Ball(const Vec2& pos, Vec2& vel_)
 	:
-	vel(vel),
 	pos(pos)
 {
+	vel = (Vec2( vel_.x , vel_.y ).Normalize( ) * BALL_SPEED);
 }
 
 void Ball::draw(Graphics& gfx) const
@@ -21,33 +21,28 @@ void Ball::update(float dt)
 	prevPos = pos - (vel * dt);
 }
 
-int Ball::wallCollision(const Rect& wall)
+void Ball::wallCollision(const Rect& wall)
 {
-	int collided = 0;
 	const Rect rect = getRect();
 	if (rect.left < wall.left)
 	{
 		pos.x += wall.left - rect.left;
 		reboundX();
-		collided = 1;
 	}
 	else if (rect.right > wall.right)
 	{
 		pos.x -= rect.right - wall.right;
-		reboundX();
-		collided = 1;
+		reboundX();;
 	}
 	if (rect.top < wall.top)
 	{
 		pos.y += wall.top - rect.top;
 		reboundY();
-		collided = 1;
 	}
 	else if (rect.bottom > wall.bottom)
 	{
 		restart = true;
 	}
-	return collided;
 }
 
 void Ball::reboundX()

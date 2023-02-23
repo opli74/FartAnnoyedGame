@@ -124,7 +124,7 @@ private:
 	static constexpr DWORD nSamplesPerSec = 44100u;
 	static constexpr WORD nBitsPerSample = 16u;
 	// change this value to increase/decrease the maximum polyphony	
-	static constexpr size_t nChannels = 64u;
+	static constexpr size_t nChannels = 255u;
 };
 
 class Sound

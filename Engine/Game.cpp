@@ -36,13 +36,18 @@ Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd),
-	ball(Vec2(400.0f, 500.0f - 15.0f), Vec2(0.0f, -BALL_SPEED)),
 	wall(Rect(110.0f, 690.0f, 0.0f, 600.0f), Colors::MakeRGB(150,150,150)),
-	soundWall(L"Sounds\\arkpad.wav"),
-	soundBrick(L"Sounds\\arkbrick.wav"),
-	paddle(Vec2(400.0f, 500.0f), 50, 8)
+	paddle( Vec2( 400.0f , 500.0f ) , 50 , 8 )
+	
 {
-	reset( );
+	offset = float( Random::getInt( offsetMin , offsetMax ) );
+	ball = Ball( Vec2( 400.0f + offset, ( 500.0f - 15.0f ) ) , Vec2( BALL_SPEED , BALL_SPEED ) );
+
+	soundPlay = Sound( L"Sounds\\arkstart.wav" );
+	soundPlay.StopAll( );
+	soundPlay.Play( 1.0f , 0.2f );
+
+	resetMy( );
 	
 	firstLevel.makeActive();
 }
@@ -65,23 +70,27 @@ void Game::Go()
 
 void Game::UpdateModel(float dt)
 {
-	start = gfx.timer(dt, start, 1.5f);
+	start = gfx.timer(dt, start, 1.25f);
 
 	if (wnd.kbd.KeyIsPressed('1'))
 	{
 		if (!pressed)
 		{
+			offset = float( Random::getInt( offsetMin , offsetMax ) );
 			ball.switchRestart();
-			ball.setPosition(Vec2(400.0f, 500.0f - 15.0f));
-			ball.setDirection(Vec2(BALL_SPEED, BALL_SPEED));
+			ball.setPosition(Vec2(400.0f + offset , 500.0f - 15.0f));
 			paddle.setPos(Vec2(400.0f, 500.0f));
 
 			if (current2dIndex > 0)
 				current2dIndex -= 1;
 
-			reset();
+			resetMy();
 
 			pressed = true;
+
+			soundPlay = Sound( L"Sounds\\arkstart.wav" );
+			soundPlay.StopAll( );
+			soundPlay.Play( 1.0f, 0.25f );
 		}
 
 	}
@@ -90,17 +99,21 @@ void Game::UpdateModel(float dt)
 
 		if (!pressed)
 		{
+			offset = float( Random::getInt( offsetMin , offsetMax ) );
 			ball.switchRestart();
-			ball.setPosition(Vec2(400.0f, 500.0f - 15.0f));
-			ball.setDirection(Vec2(BALL_SPEED, BALL_SPEED));
+			ball.setPosition(Vec2(400.0f + offset, 500.0f - 15.0f));
 			paddle.setPos(Vec2(400.0f, 500.0f));
 
 			if (current2dIndex < 2)
 				current2dIndex += 1;
 
-			reset();
+			resetMy();
 
 			pressed = true;
+
+			soundPlay = Sound( L"Sounds\\arkstart.wav" );
+			soundPlay.StopAll( );
+			soundPlay.Play( 1.0f , 0.25f );
 		}
 
 	}
@@ -113,31 +126,32 @@ void Game::UpdateModel(float dt)
 	if (start)
 	{
 		if (!spaceClicked)
-			ball.setPosition(Vec2(paddle.getVec().x, 500.0f - 15.0f));
-		if (wnd.kbd.KeyIsPressed(VK_SPACE))
+			ball.setPosition(Vec2(paddle.getVec().x + offset , 500.0f - 15.0f));
+
+		if ( wnd.kbd.KeyIsPressed( VK_SPACE ) && !spaceClicked )
+		{
 			spaceClicked = true;
+			soundPlay = Sound( L"Sounds\\arkpad.wav" );
+			soundPlay.StopAll( );
+			soundPlay.Play( 1.0f , 0.25f );
+		}
 
 		if (spaceClicked)
 			ball.update(dt);
 
 		paddle.update(wnd.kbd, dt);
 
-
-		if (ball.wallCollision(wall.getWall()) == 1)
-		{
-			soundWall.Play();
-		}
+		ball.wallCollision( wall.getWall( ) );
 
 		if (ball.getRestart())
 		{
 			ball.switchRestart();
-			ball.setPosition(Vec2(400.0f, 500.0f - 15.0f));
-			ball.setDirection(Vec2(BALL_SPEED, BALL_SPEED));
+			ball.setPosition(Vec2(400.0f + offset, 500.0f - 15.0f));
 			paddle.setPos(Vec2(400.0f, 500.0f));
 			start = false;
 			spaceClicked = false;
-		}
 
+		}
 
 		bool collisionHappened = false;
 		float collisionDisSq;
@@ -174,7 +188,6 @@ void Game::UpdateModel(float dt)
 					if ( power.bullets[ f ].brickCollision( bricks[ i ] ) )
 					{
 						bricks[ i ].hit = true;
-						soundBrick.Play( );
 						if ( bricks[ i ].getDestroyed( ) )
 							destroyed++;
 					}
@@ -185,16 +198,24 @@ void Game::UpdateModel(float dt)
 
 		if (collisionHappened)
 		{
-			soundBrick.Play( );
+			
 
-			if (brickArray[current2dIndex][1][collisionIndex] == 6)
+			if (brickArray[current2dIndex][1][collisionIndex] == 6 || brickArray[ current2dIndex ][ 1 ][ collisionIndex ] == 7 )
 			{
-				bricks[collisionIndex].executeBallCollision(ball);
+				soundPlay = Sound( L"Sounds\\arkstrongbrick.wav" );
 			}
 			else
 			{
-				bricks[collisionIndex].executeBallCollision(ball);
+				soundPlay = Sound( L"Sounds\\arkbrick.wav" );
 			}
+
+			if ( !wnd.kbd.KeyIsPressed( VK_SPACE ) )
+			{
+				soundPlay.StopAll( );
+				soundPlay.Play( 1.0f , 0.25f );
+			}
+
+			bricks[ collisionIndex ].executeBallCollision( ball );
 			
 			if (bricks[collisionIndex].getDestroyed())
 			{
@@ -213,17 +234,20 @@ void Game::UpdateModel(float dt)
 		}
 
 		/*paddle.ballCollision( ball );*/
-		if (paddle.ballCollision(ball))
+		if (paddle.ballCollision(ball) &&  !wnd.kbd.KeyIsPressed( VK_SPACE )  )
 		{
-			soundBrick.Play();
+			soundPlay = Sound( L"Sounds\\arkpad.wav" );
+			soundPlay.StopAll( );
+			soundPlay.Play( 1.0f , 0.25f );
 		}
 
 		paddle.wallCollision(wall.getWall());
 
+		int i = 0;
 		for ( PowerUp& power : powers )
 		{
 			power.update( dt );
-			power.wallCollision( wall.getWall( ) );
+
 
 			if ( power.paddleCollision( paddle ) )
 				power.givePower( );
@@ -231,13 +255,30 @@ void Game::UpdateModel(float dt)
 			if ( power.getPower( ) )
 			{
 				power.updateBullets( dt , wall.getWall( ) );
-				power.shot( paddle , wnd.kbd , dt );
+
+				if ( power.shot( paddle , wnd.kbd , dt ) )
+				{
+					soundPlay = Sound( L"Sounds\\arkbullet.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , 0.25f );
+				}
+					
 			}
+			if ( power.wallCollision( wall.getWall( ) ) )
+			{
+				power.bullets.clear( ); 
+				powers.erase( powers.begin( ) + i );
+			}
+			i++;
 		}
+
+	}
+	else
+	{
 	}
 }
 
-void Game::reset()
+void Game::resetMy()
 {
 	destroyed = 0;
 	nonBrickAmount = 0;

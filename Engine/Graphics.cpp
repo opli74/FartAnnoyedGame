@@ -370,6 +370,18 @@ bool Graphics::timer( float dt , bool& operations , float amountTime )
 	return operations;
 }
 
+bool Graphics::timer( float dt , float amountTime )
+{
+	if ( amountTime * 60.0f >= 0.0f)
+	{
+		amountTime -= dt * 60.0f;
+		return false;
+	}
+	
+	return true;
+}
+
+
 //////////////////////////////////////////////////
 //           Graphics Exception
 Graphics::Exception::Exception( HRESULT hr,const std::wstring& note,const wchar_t* file,unsigned int line )

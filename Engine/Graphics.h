@@ -65,6 +65,7 @@ public:
 	}
 	void DrawCircle( int x,int y,int radius,Color c );
 	bool timer( float dt , bool& operations , float amountTime );
+	bool timer( float dt , float amountTime );
 	~Graphics();
 private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain>				pSwapChain;

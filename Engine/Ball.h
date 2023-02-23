@@ -9,10 +9,11 @@
 class Ball
 {
 public:
-	Ball(const Vec2& pos, const Vec2& vel);
+	Ball( ) = default;
+	Ball(const Vec2& pos, Vec2& vel);
 	void draw(Graphics& gfx) const;
 	void update(float dt);
-	int wallCollision(const Rect& wall);
+	void wallCollision(const Rect& wall);
 	void reboundX();
 	void reboundY();
 	void reboundX(const bool& dir);

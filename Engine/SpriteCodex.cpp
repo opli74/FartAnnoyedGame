@@ -163,7 +163,7 @@ void SpriteCodex::DrawPaddle(const Vec2& center, Graphics& gfx)
 	gfx.DrawRect(Rect(x, x + 100, y, y + 1), Colors::MakeRGB(200, 200, 200));
 
 	gfx.DrawRect(Rect(x, x + 100, y + 1, y + 2), Colors::MakeRGB( 50, 50, 50));
-	gfx.DrawRect(Rect(x + 2, x + 98, y + 2 , y + 5), Colors::MakeRGB(50, 50, 50));
+	gfx.DrawRect(Rect(x + 2, x + 98, y + 2 , y + 5), Colors::MakeRGB(50, 50, 50) );
 	gfx.DrawRect(Rect(x + 4, x + 96, y + 5, y + 8), Colors::MakeRGB(50, 50, 50));
 	gfx.DrawRect(Rect(x + 6, x + 94, y + 8, y + 11), Colors::MakeRGB(50, 50, 50));
 	gfx.DrawRect(Rect(x + 8, x + 92, y + 11, y + 14), Colors::MakeRGB(50, 50, 50));
@@ -203,4 +203,26 @@ void SpriteCodex::DrawPaddle(const Vec2& center, Graphics& gfx)
 	gfx.PutPixel(x + 90, y + 15, Colors::MakeRGB(200, 200, 200));
 
 	gfx.DrawRect(Rect(x + 10, x + 90, y + 15, y + 16), Colors::MakeRGB(200, 200, 200));
+}
+
+void SpriteCodex::DrawBullet( const Vec2& center , Graphics& gfx )
+{
+	const int x = int( center.x - 4.0f );
+	const int y = int( center.y  - 8.0f );
+
+	gfx.DrawRect( x , y + 3, x + 8 , y + 16 , Colors::Black );
+	gfx.DrawRect( x + 2 , y + 5 , x + 6 , y + 14 , Colors::Yellow );
+
+	gfx.DrawRect( x + 3, y  , x + 5 , y + 3 , Colors::White );
+
+}
+
+void SpriteCodex::DrawBulletDestroyed( const Vec2& center , Graphics& gfx)
+{
+	const int x = int( center.x - 4.0f );
+	const int y = int( center.y - 8.0f );
+
+	gfx.DrawRect( x + 3, y , x + 5 , y + 2 , Colors::White );
+	gfx.DrawRect( x , y + 5, x + 2 , y + 7 , Colors::White );
+	gfx.DrawRect( x+ 6 , y + 5 , x + 8 , y + 7 , Colors::White );
 }

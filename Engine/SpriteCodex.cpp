@@ -155,54 +155,57 @@ void SpriteCodex::DrawBall( const Vec2& topLeft,Graphics& gfx )
 	gfx.PutPixel(8 + x, 13 + y, 48, 48, 48);	
 }
 
-void SpriteCodex::DrawPaddle(const Vec2& center, Graphics& gfx)
+void SpriteCodex::DrawPaddle(const Vec2& center, Graphics& gfx, int add)
 {
-	const int x = int(center.x) - 50;
+	const int x = int( center.x ) - int(PADDLE_HALF_WIDTH);
+	const int xL = (int(center.x) - int(PADDLE_HALF_WIDTH) ) - add ;
+	const int xR = (int( center.x ) + int(PADDLE_HALF_WIDTH) ) + add ;
 	const int y = int(center.y) - 8;
 
-	gfx.DrawRect(Rect(x, x + 100, y, y + 1), Colors::MakeRGB(200, 200, 200));
+	gfx.DrawRect( x + 20 , y, x + 80 , y + 16 , fill );
 
-	gfx.DrawRect(Rect(x, x + 100, y + 1, y + 2), Colors::MakeRGB( 50, 50, 50));
-	gfx.DrawRect(Rect(x + 2, x + 98, y + 2 , y + 5), Colors::MakeRGB(50, 50, 50) );
-	gfx.DrawRect(Rect(x + 4, x + 96, y + 5, y + 8), Colors::MakeRGB(50, 50, 50));
-	gfx.DrawRect(Rect(x + 6, x + 94, y + 8, y + 11), Colors::MakeRGB(50, 50, 50));
-	gfx.DrawRect(Rect(x + 8, x + 92, y + 11, y + 14), Colors::MakeRGB(50, 50, 50));
-	gfx.DrawRect(Rect(x + 10, x + 90, y + 14, y + 15), Colors::MakeRGB(50, 50, 50));
+	gfx.DrawRect( xL + 20, y , xL + 50 , y + 16 , fill );
+	gfx.DrawRect( xR - 50 , y , xR - 20 , y + 16 , fill );
 
-	gfx.PutPixel(x + 1, y + 1, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 2, y + 2, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 2, y + 3, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 3, y + 4, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 4, y + 5, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 4, y + 6, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 5, y + 7, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 6, y + 8, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 6, y + 9, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 7, y + 10, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 8, y + 11, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 8, y + 12, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 9, y + 13, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 10, y + 14,  Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 10, y + 15, Colors::MakeRGB(200, 200, 200));
+	////right
+	gfx.DrawRect( xR - 16 , y , xR - 10 , y + 16 , orange);
+	gfx.DrawRect( xR - 10 , y + 1 , xR - 6 , y + 15 , orange );
 
-	gfx.PutPixel(x + 100, y + 1, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 99, y + 1, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 98, y + 2, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 98, y + 3, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 97, y + 4, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 96, y + 5, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 96, y + 6, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 95, y + 7, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 94, y + 8, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 94, y + 9, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 93, y + 10, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 92, y + 11, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 92, y + 12, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 91, y + 13, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 90, y + 14, Colors::MakeRGB(200, 200, 200));
-	gfx.PutPixel(x + 90, y + 15, Colors::MakeRGB(200, 200, 200));
+	////left
+	gfx.DrawRect( xL + 10 , y , xL + 16 , y + 16 , orange );
+	gfx.DrawRect( xL + 6 , y + 1 , xL + 10 , y + 15 , orange );
 
-	gfx.DrawRect(Rect(x + 10, x + 90, y + 15, y + 16), Colors::MakeRGB(200, 200, 200));
+
+	gfx.DrawRect( xL + 9, y + 3 , xR - 9 , y + 5 , Colors::MakeRGB( 215,215,215 ));
+
+	////left
+	gfx.DrawRect( xL + 16 , y , xL + 20 , y + 16 , Colors::Black );
+
+	////right
+	gfx.DrawRect( xR - 20 , y , xR - 16 , y + 16 , Colors::Black );
+	
+	 
+	////left
+
+	gfx.DrawRect( xL , y + 5, xL + 6 , y + 11 , outline );
+	gfx.DrawRect( xL + 2, y + 2 , xL + 6 , y + 5 , outline );
+	gfx.DrawRect( xL + 2 , y + 11 , xL + 6 , y + 14 , outline );
+
+	gfx.DrawRect( xL + 1 , y + 6 , xL + 6 , y + 10 , blink );
+	gfx.DrawRect( xL + 3 , y + 3 , xL + 6 , y + 6 , blink );
+	gfx.DrawRect( xL + 3 , y + 10 , xL + 6 , y + 13 , blink );
+
+	////right
+
+	gfx.DrawRect( xR - 6, y + 5 , xR , y + 11 , outline );
+	gfx.DrawRect( xR - 6 , y + 2 , xR - 2 , y + 5 ,	outline );
+	gfx.DrawRect( xR - 6 , y + 11 , xR - 2 , y + 14 , outline );
+
+	gfx.DrawRect( xR - 6, y + 6 , xR - 1 , y + 10 , blink );
+	gfx.DrawRect( xR - 6 , y + 3 , xR - 3 , y + 6 , blink );
+	gfx.DrawRect( xR - 6 , y + 10 , xR - 3 , y + 13 , blink );
+
+	gfx.DrawRect( xL + 4 , y + 5 , xL + 9 , y + 7 , Colors::MakeRGB( 215 , 215 , 215 ) );
 }
 
 void SpriteCodex::DrawBullet( const Vec2& center , Graphics& gfx )

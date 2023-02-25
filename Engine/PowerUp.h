@@ -5,19 +5,16 @@
 #include "Paddle.h"
 #include "Brick.h"
 #include "SpriteCodex.h"
+#include "Colors.h"
 
 class PowerUp
 {
 public:
-
-
-	enum class bulletTypes
+	enum class powers
 	{
-		bulletV1,
-		bulletV2,
-		bulletV3
+		bullet,
+		length
 	};
-
 
 	class Bullet
 	{
@@ -43,7 +40,7 @@ public:
 	};
 
 	PowerUp() = default;
-	PowerUp(Rect& rect);
+	PowerUp(Rect& rect, PowerUp::powers in);
 	void draw(Graphics& gfx) const;
 	void drawBullets( Graphics& gfx );
 	void updateBullets( float dt , const Rect& wall );
@@ -51,10 +48,8 @@ public:
 	void update(float dt);
 	bool paddleCollision(Paddle& paddle);
 	bool wallCollision(const Rect& wall);
-	void givePower( );
-	bool getPower( );
-	bulletTypes getType( ) const;
-	void setType( bulletTypes in );
+	void turnOn( );
+	PowerUp::powers getPower( );
 	bool shot( Paddle& paddle , const Keyboard& kdb, float dt );
 	Rect getRect() const;
 
@@ -62,6 +57,7 @@ public:
 	std::vector<Bullet> bullets;
 
 private:
+	Color col;
 	std::vector<int> removeBullets;
 	float frames = 1.0f;    
 	float bulletWait = 0.35f;
@@ -70,9 +66,10 @@ private:
 	Vec2 pos;
 	Vec2 vel = Vec2(0.0f, 150.0f);
 	bool destroyed = false;
-	bool shoot = false;
+	bool powerOn = false;
 
-	bulletTypes type;
+	powers type;
+
 
 };
 

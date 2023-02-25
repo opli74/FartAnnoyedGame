@@ -1,12 +1,26 @@
 #include "PowerUp.h"
 
 
-PowerUp::PowerUp(Rect& rect)
+PowerUp::PowerUp(Rect& rect, PowerUp::powers in)
 	:
-	pos(rect.getCenter())
+	pos( rect.getCenter() ),
+	type( in )
 {
-	type = bulletTypes::bulletV1;
+	switch ( type )
+	{
+		case PowerUp::powers::bullet:
+		{
+			col = Colors::MakeRGB( 10 , 10 , 10 );
+			break;
+		}
+		case PowerUp::powers::length:
+		{
+			col = Colors::Magenta;
+			break;
+		}
+	}
 }
+
 
 void PowerUp::draw(Graphics& gfx) const
 {
@@ -15,8 +29,8 @@ void PowerUp::draw(Graphics& gfx) const
 		gfx.DrawRect( Rect::fromCenter( pos , width, height - 2) , Colors::MakeRGB( 200 , 200 , 200 ) );
 		gfx.DrawRect( Rect::fromCenter( pos , width - 2, height ) , Colors::MakeRGB( 200 , 200 , 200 ) );
 
-		gfx.DrawRect( Rect::fromCenter( pos , width - 1, height - 3) , Colors::MakeRGB( 10 , 10 , 10 ) );
-		gfx.DrawRect( Rect::fromCenter( pos , width - 3 , height - 1 ) , Colors::MakeRGB( 10 , 10 , 10 ) );
+		gfx.DrawRect( Rect::fromCenter( pos , width - 1, height - 3) , col );
+		gfx.DrawRect( Rect::fromCenter( pos , width - 3 , height - 1 ) , col );
 	}
 		
 }
@@ -51,7 +65,7 @@ void PowerUp::updateBullets( float dt, const Rect& wall )
 
 Rect PowerUp::getBullets( )
 {
-	if ( shoot )
+	if ( powerOn )
 	{
 		for ( Bullet& bullet : bullets )
 		{
@@ -63,10 +77,11 @@ Rect PowerUp::getBullets( )
 bool PowerUp::shot( Paddle& paddle , const Keyboard& kdb , float dt)
 {
 	frames += dt;
-	if ( shoot && kdb.KeyIsPressed( VK_SPACE ) && frames >= bulletWait)
+	if ( powerOn && kdb.KeyIsPressed( VK_SPACE ) && frames >= bulletWait)
 	{
 		frames = 0.0f;
-		bullets.push_back( Bullet( paddle.getVec() , Vec2( 0, - 500.0f) ) );
+		bullets.push_back( Bullet( Vec2(paddle.getVec().x + 15.0f, paddle.getVec( ).y ) , Vec2( 0, - 500.0f) ) );
+		bullets.push_back( Bullet( Vec2( paddle.getVec( ).x - 15.0f , paddle.getVec( ).y ) , Vec2( 0 , -500.0f ) ) );
 		return true;
 	}
 	return false;
@@ -105,25 +120,16 @@ bool PowerUp::wallCollision(const Rect& wall)
 	return false;
 }
 
-void PowerUp::givePower(  )
+void PowerUp::turnOn(  )
 {
-	shoot = true;
+	powerOn = true;
 }
 
-bool PowerUp::getPower( )
-{
-	return shoot;
-}
-
-PowerUp::bulletTypes PowerUp::getType( ) const
+PowerUp::powers PowerUp::getPower( )
 {
 	return type;
 }
 
-void PowerUp::setType( bulletTypes in )
-{
-	type = in;
-}
 
 PowerUp::Bullet::Bullet( Vec2 pos , Vec2 vel) : pos( pos ), vel( vel )
 {

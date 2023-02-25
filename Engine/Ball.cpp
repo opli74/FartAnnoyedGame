@@ -96,9 +96,9 @@ Rect Ball::getRect() const
 	return Rect::fromCenter(pos, radius, radius);
 }
 
-void Ball::setDirection(const Vec2& vel_)
+void Ball::setDirection( Vec2& vel_ )
 {
-	vel = vel_;
+	vel = Vec2(vel_.x, vel_.y).Normalize( ) * BALL_SPEED;
 }
 
 void Ball::setPosition(const Vec2& pos_)

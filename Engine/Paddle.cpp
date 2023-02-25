@@ -2,17 +2,35 @@
 #define _USE_MATH_DEFINES
 #include <Math.h>
 
+
+
 Paddle::Paddle(const Vec2& pos, float halfWidth, float halfHeight)
 	:
 	pos(pos),
 	halfWidth(halfWidth),
 	halfHeight(halfHeight)
 {
+	diff = ( ( longHalfWidth - halfWidth ) / 2 ) * 2;
 }
 
-void Paddle::draw(Graphics& gfx) const
+void Paddle::draw(Graphics& gfx)
 {
-	SpriteCodex::DrawPaddle(pos, gfx);
+	if ( !incLength )
+	{
+		SpriteCodex::DrawPaddle( pos , gfx , 0 );
+	}
+	else
+	{
+		if ( amount <= int(diff) )
+		{
+			if ( frames >= 0.03f )
+			{
+				amount++;
+				frames = 0;
+			}
+		}
+		SpriteCodex::DrawPaddle( pos , gfx , amount );
+	}
 }
 
 bool Paddle::ballCollision(Ball& ball)
@@ -25,7 +43,6 @@ bool Paddle::ballCollision(Ball& ball)
 
 		float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballCurrPos.y - pos.y);
 		float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballCurrPos.x - pos.x);
-		float maxBounceAngle = 5 * M_PI / 12.0f;
 
 		if (wy > hx)
 		{
@@ -91,6 +108,16 @@ void Paddle::wallCollision(const Rect& wall)
 
 void Paddle::update(const Keyboard& kbd, float dt)
 {
+	if ( incLength )
+	{
+		frames += dt;
+		diff = ( ( longHalfWidth - halfWidth ) / 2 ) * 2;
+	}
+	else
+	{
+		frames = 0;
+		amount = 0;
+	}
 	if (kbd.KeyIsPressed(VK_LEFT))
 	{
 		pos.x -= speed * dt;
@@ -102,9 +129,25 @@ void Paddle::update(const Keyboard& kbd, float dt)
 	}
 }
 
+void Paddle::lengthPwrUp()
+{
+	if ( longHalfWidth < maxLength )
+		longHalfWidth += 5.0f;
+	incLength = true;
+}
+
+void Paddle::lengthPwrUpReset( )
+{
+	incLength = false;
+	longHalfWidth = halfWidth + 5.0f;
+}
+
 Rect Paddle::getRect() const
 {
-	return Rect::fromCenter(pos, halfWidth, halfHeight);
+	if (incLength )
+		return Rect::fromCenter(pos, longHalfWidth, halfHeight);
+
+	return Rect::fromCenter( pos , halfWidth , halfHeight );
 }
 
 Vec2 Paddle::getVec() const

@@ -25,10 +25,15 @@ namespace Random
 {
 	std::mt19937 mt{ std::random_device{}() };
 
-	int getInt(int min, int max)
+	int getRand( int min, int max )
 	{
 		std::uniform_int_distribution<int> die(min, max);
 		return die(mt);
+	}
+	float getRand( float min , float max )
+	{
+		std::uniform_real_distribution<float> die( min , max );
+		return die( mt );
 	}
 }
 
@@ -37,11 +42,11 @@ Game::Game(MainWindow& wnd)
 	wnd(wnd),
 	gfx(wnd),
 	wall(Rect(110.0f, 690.0f, 0.0f, 600.0f), Colors::MakeRGB(150,150,150)),
-	paddle( Vec2( 400.0f , 500.0f ) , 50 , 8 )
+	paddle( Vec2( 400.0f , 500.0f ) , PADDLE_HALF_WIDTH , 8 )
 	
 {
-	offset = float( Random::getInt( offsetMin , offsetMax ) );
-	ball = Ball( Vec2( 400.0f + offset, ( 500.0f - 15.0f ) ) , Vec2( BALL_SPEED , BALL_SPEED ) );
+	offset = getOffset( );
+	ball = Ball( Vec2( 400.0f + offset , ( 500.0f - 0.0f ) ) , Vec2( BALL_SPEED , BALL_SPEED ) );
 
 	soundPlay = Sound( L"Sounds\\arkstart.wav" );
 	soundPlay.StopAll( );
@@ -66,8 +71,6 @@ void Game::Go()
 	gfx.EndFrame();
 }
 
-
-
 void Game::UpdateModel(float dt)
 {
 	start = gfx.timer(dt, start, 1.25f);
@@ -76,10 +79,10 @@ void Game::UpdateModel(float dt)
 	{
 		if (!pressed)
 		{
-			offset = float( Random::getInt( offsetMin , offsetMax ) );
-			ball.switchRestart();
+			offset = getOffset( );
 			ball.setPosition(Vec2(400.0f + offset , 500.0f - 15.0f));
 			paddle.setPos(Vec2(400.0f, 500.0f));
+			paddle.lengthPwrUpReset( );
 
 			if (current2dIndex > 0)
 				current2dIndex -= 1;
@@ -99,12 +102,15 @@ void Game::UpdateModel(float dt)
 
 		if (!pressed)
 		{
-			offset = float( Random::getInt( offsetMin , offsetMax ) );
-			ball.switchRestart();
+			offset = getOffset( );
 			ball.setPosition(Vec2(400.0f + offset, 500.0f - 15.0f));
 			paddle.setPos(Vec2(400.0f, 500.0f));
+			paddle.lengthPwrUpReset( );
 
-			if (current2dIndex < 2)
+			start = false;
+			spaceClicked = false;
+
+			if (current2dIndex < 3)
 				current2dIndex += 1;
 
 			resetMy();
@@ -128,7 +134,7 @@ void Game::UpdateModel(float dt)
 		if (!spaceClicked)
 			ball.setPosition(Vec2(paddle.getVec().x + offset , 500.0f - 15.0f));
 
-		if ( wnd.kbd.KeyIsPressed( VK_SPACE ) && !spaceClicked )
+		if ( wnd.kbd.KeyIsPressed( VK_UP ) && !spaceClicked )
 		{
 			spaceClicked = true;
 			soundPlay = Sound( L"Sounds\\arkpad.wav" );
@@ -145,11 +151,16 @@ void Game::UpdateModel(float dt)
 
 		if (ball.getRestart())
 		{
+			offset = getOffset( );
 			ball.switchRestart();
 			ball.setPosition(Vec2(400.0f + offset, 500.0f - 15.0f));
+			ball.setDirection( Vec2( 0.0f , 5.0f ) );
 			paddle.setPos(Vec2(400.0f, 500.0f));
 			start = false;
 			spaceClicked = false;
+			soundPlay = Sound( L"Sounds\\arkrestart.wav" );
+			soundPlay.StopAll( );
+			soundPlay.Play( 1.0f , 0.25f );
 
 		}
 
@@ -209,31 +220,39 @@ void Game::UpdateModel(float dt)
 				soundPlay = Sound( L"Sounds\\arkbrick.wav" );
 			}
 
-			if ( !wnd.kbd.KeyIsPressed( VK_SPACE ) )
-			{
-				soundPlay.StopAll( );
-				soundPlay.Play( 1.0f , 0.25f );
-			}
+
+			soundPlay.StopAll( );
+			soundPlay.Play( 1.0f , 0.25f );
+			
 
 			bricks[ collisionIndex ].executeBallCollision( ball );
 			
 			if (bricks[collisionIndex].getDestroyed())
 			{
-				if ( powers.size( ) == 0 )
+
+				if ( Random::getRand( 0 , 5 ) == 5)
 				{
-					if ( Random::getInt( 1 , 2 ) == 1 )
+					switch ( Random::getRand( 0 , 1 ) )
 					{
-						powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) ) );
+						case 0:
+						{
+							powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::bullet ) );
+							break;
+						}
+						case 1:
+						{
+							powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::length ) );
+							break;
+						}
 					}
+					
 				}
 				destroyed++;
 			}
 				
 			bricks[collisionIndex].hit = true;
-			collisionHappenedGlobal = true;
 		}
 
-		/*paddle.ballCollision( ball );*/
 		if (paddle.ballCollision(ball) &&  !wnd.kbd.KeyIsPressed( VK_SPACE )  )
 		{
 			soundPlay = Sound( L"Sounds\\arkpad.wav" );
@@ -248,11 +267,37 @@ void Game::UpdateModel(float dt)
 		{
 			power.update( dt );
 
-
 			if ( power.paddleCollision( paddle ) )
-				power.givePower( );
+			{
+				switch ( power.getPower( ) )
+				{
+					case PowerUp::powers::length:
+					{
+						soundPowerUp = Sound( L"Sounds\\arklengthen.wav" );
+						soundPowerUp.StopAll( );
+						soundPowerUp.Play( 1.0f , 0.2f );
+						paddle.lengthPwrUp( );
+						offsetMaxMax = ( ( paddle.getRect( ).right - paddle.getRect( ).left ) / 2 ) - 10.0f;
+						offsetMinMax = -offsetMaxMax;
+						break;
+					}
+					case PowerUp::powers::bullet:
+					{
+						if ( !hasBullet )
+						{
+							power.turnOn( );
+							hasBullet = true;
+						}
+						else
+						{
+							powers.erase( powers.begin( ) + i );
+						}
+						break;
+					}
+				}
+			}
 
-			if ( power.getPower( ) )
+			if ( power.getPower( ) == PowerUp::powers::bullet )
 			{
 				power.updateBullets( dt , wall.getWall( ) );
 
@@ -262,11 +307,10 @@ void Game::UpdateModel(float dt)
 					soundPlay.StopAll( );
 					soundPlay.Play( 1.0f , 0.25f );
 				}
-					
 			}
+				
 			if ( power.wallCollision( wall.getWall( ) ) )
 			{
-				power.bullets.clear( ); 
 				powers.erase( powers.begin( ) + i );
 			}
 			i++;
@@ -286,13 +330,16 @@ void Game::resetMy()
 	nBrickCols = brickArray[current2dIndex][0][1];
 	nBrickRows = brickArray[current2dIndex][0][0];
 	nBricks = nBrickCols * nBrickRows;
+	offsetMaxMax = 30.0f;
+	offsetMinMax = -30.0f;
+	hasBullet = false;
 
 	padX = ((wall.getWall().right - wall.getWall().left) - (nBrickRows * brickWidth)) / 2;
 	padY = ((wall.getWall().bottom - wall.getWall().top) - (nBrickCols * brickHeight)) / 3;
 
-	if (padY + (nBrickCols * brickHeight) > 350.0f)
+	if (padY + (nBrickCols * brickHeight) > 370.0f)
 	{
-		padY -= ((nBrickCols * brickHeight) + padY) - 350.0f;
+		padY -= ((nBrickCols * brickHeight) + padY) - 370.0f;
 	}
 	topLeft = Vec2((wall.getWall().left + padX), (wall.getWall().top + padY));
 
@@ -331,11 +378,16 @@ void Game::resetMy()
 	}
 }
 
+float Game::getOffset( )
+{
+	if ( Random::getRand( 0 , 1 ) == 1 )
+		return ( Random::getRand( offsetMaxMin , offsetMaxMax ) );
 
+	return ( Random::getRand( offsetMinMin , offsetMinMax ) );
+}
 
 void Game::ComposeFrame()
 {
-
 	wall.draw(gfx);
 	ball.draw(gfx);
 
@@ -348,7 +400,7 @@ void Game::ComposeFrame()
 	{
 		power.draw(gfx);
 
-		if ( power.getPower( ) )
+		if ( power.getPower( ) == PowerUp::powers::bullet )
 		{
 			power.drawBullets( gfx );
 		}

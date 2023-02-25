@@ -3,7 +3,7 @@
 #include "Vec2.h"
 #include "Graphics.h"
 #include "Rect.h"
-#define BALL_SPEED 350.0f
+#define BALL_SPEED 425.0f
 
 
 class Ball
@@ -22,7 +22,7 @@ public:
 	Vec2 getPosition() const;
 	Vec2 getVelocity() const;
 	bool getRestart() const;
-	void setDirection(const Vec2& vel_);
+	void setDirection(Vec2& vel_);
 	void setPosition(const Vec2& pos_);
 	void switchRestart();
 	Rect getRect() const;

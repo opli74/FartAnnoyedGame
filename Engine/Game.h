@@ -46,6 +46,7 @@ private:
 	void ComposeFrame();
 	void UpdateModel(float dt);
 	void resetMy();
+	float getOffset( );
 	/********************************/
 	/*  User Functions              */
 	/********************************/
@@ -54,10 +55,10 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables  */
-	bool start = false, spaceClicked = false, collisionHappenedGlobal = false;
+	bool start = false , spaceClicked = false;
 
-	static constexpr float brickWidth = 40.0f;
-	static constexpr float brickHeight = 18.0f;
+	static constexpr float brickWidth = 42.0f;
+	static constexpr float brickHeight = 20.0f;
 	int nBrickRows;
 	int nBrickCols;
 	int nBricks;
@@ -67,6 +68,7 @@ private:
 	FrameTimer ft;
 	Wall wall;
 	Sound soundPlay;
+	Sound soundPowerUp;
 	Paddle paddle;
 	Mouse mouse;
 	Screen firstLevel, secondLevel;
@@ -76,8 +78,10 @@ private:
 	bool pressed = false;
 
 	float offset = 0.0f;
-	float offsetMin = -35.0f;
-	float offsetMax = 35.0f;
+	float offsetMinMin = -10.0f;
+	float offsetMinMax = -30.0f;
+	float offsetMaxMin = 10.0f;
+	float offsetMaxMax = 30.0f;
 
 	int destroyed = 0;
 	int indestructable = 0;
@@ -87,17 +91,20 @@ private:
 	float padY;
 	Vec2 topLeft;
 
+	bool hasBullet = false;
+
 	std::vector<std::vector<std::vector<int>>> brickArray = {
 
 		{ 
-			{11, 5},
+			{12, 6},
 
 			{
-			0, 0, 1, 0, 1, 7, 1, 0, 1, 0, 0,
-			2, 2, 0, 2, 0, 0, 0, 2, 0, 2, 2,
-			0, 0, 3, 0, 3, 0, 3, 0, 3, 0, 0,
-			4, 4, 0, 4, 0, 7, 0, 4, 0, 4, 4,
-			0, 0, 5, 0, 5, 5, 5, 0, 5, 0, 0,
+			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+			4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 			}
 
 		},
@@ -141,14 +148,33 @@ private:
 			7, 2, 3, 4, 5, 0, 2, 3, 4, 5, 7,
 			7, 3, 4, 5, 1, 2, 3, 4, 5, 1, 7,
 			0, 4, 5, 1, 2, 3, 4, 5, 1, 2, 0,
-			0, 0, 1, 2, 3, 4, 5, 1, 2, 0, 0,
+			0, 0, 1, 2, 3, 6, 5, 1, 2, 0, 0,
 			0, 0, 2, 3, 4, 5, 1, 2, 3, 0, 0,
-			6, 0, 0, 4, 5, 1, 2, 3, 0, 0, 6,
+			1, 0, 0, 4, 5, 1, 2, 3, 0, 0, 1,
 			0, 0, 0, 5, 1, 2, 3, 4, 0, 0, 0,
 			0, 0, 0, 0, 2, 3, 4, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 6, 0, 0, 0, 6, 0, 0, 0, 6, 0,
+			0, 1, 0, 0, 0, 6, 0, 0, 0, 1, 0,
+			}
+
+		},
+
+		{
+			{ 13 , 11 },
+
+			{
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 2,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
 			}
 		}
 	};

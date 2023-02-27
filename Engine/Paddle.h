@@ -28,7 +28,7 @@ private:
 	float maxLength = 74.0f;
 	float diff;
 	float halfHeight;
-	const float speed = BALL_SPEED + 50.0f;
+	const float speed = BALL_SPEED + 75.0f;
 	bool test = false;
 	bool incLength = false;
 	int amount = 0;

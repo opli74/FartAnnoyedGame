@@ -18,14 +18,14 @@ public:
 	void setColor(const Color& in);
 	Rect getRect() const;
 	bool getDestroyed();
-	void color();
+	void color(float dt);
 
 public:
 	bool hit = false;
 
 private:
 	
-	int frames = 0;
+	float frames = 0.0f;
 	static constexpr float padding = 1.0f;
 	Rect rect;
 	Color c = Colors::MakeRGB(255, 137, 0) , l = Colors::MakeRGB(230, 230, 230) , d = Colors::MakeRGB(130, 130, 130);;

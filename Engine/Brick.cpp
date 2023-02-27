@@ -133,14 +133,14 @@ bool Brick::getDestroyed()
 	return destroyed;
 }
 
-void Brick::color()
+void Brick::color(float dt)
 {
 	if (hit)
 	{
-		frames++;
-		if (frames > 25)
+		frames += dt;
+		if (frames > 0.035f)
 		{
-			frames = 0;
+			frames = 0.0f;
 			hit = false;
 		}
 			

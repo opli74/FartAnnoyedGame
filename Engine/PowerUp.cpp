@@ -18,6 +18,11 @@ PowerUp::PowerUp(Rect& rect, PowerUp::powers in)
 			col = Colors::Magenta;
 			break;
 		}
+		case PowerUp::powers::balls:
+		{
+			col = Colors::Green;
+			break;
+		}
 	}
 }
 

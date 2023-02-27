@@ -47,6 +47,7 @@ private:
 	void UpdateModel(float dt);
 	void resetMy();
 	float getOffset( );
+	float getOffset( float minMin , float minMax , float maxMin , float maxMax );
 	/********************************/
 	/*  User Functions              */
 	/********************************/
@@ -64,14 +65,15 @@ private:
 	int nBricks;
 	std::vector<Brick> bricks;
 	std::vector<PowerUp> powers;
-	Ball ball;
+	int currBalls = 1;
+	static constexpr int maxBalls = 3;
+	Ball balls[ maxBalls ];
 	FrameTimer ft;
 	Wall wall;
 	Sound soundPlay;
 	Sound soundPowerUp;
 	Paddle paddle;
 	Mouse mouse;
-	Screen firstLevel, secondLevel;
 
 	int current2dIndex = 0;
 
@@ -91,7 +93,7 @@ private:
 	float padY;
 	Vec2 topLeft;
 
-	bool hasBullet = false;
+	bool hasBullet = false, hasBalls = false;
 
 	std::vector<std::vector<std::vector<int>>> brickArray = {
 

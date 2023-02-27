@@ -21,7 +21,7 @@ void Ball::update(float dt)
 	prevPos = pos - (vel * dt);
 }
 
-void Ball::wallCollision(const Rect& wall)
+bool Ball::wallCollision(const Rect& wall, bool restart_)
 {
 	const Rect rect = getRect();
 	if (rect.left < wall.left)
@@ -41,8 +41,13 @@ void Ball::wallCollision(const Rect& wall)
 	}
 	else if (rect.bottom > wall.bottom)
 	{
-		restart = true;
+		if (  restart_  )
+			restart = true;
+
+		return true;
 	}
+
+	return false;
 }
 
 void Ball::reboundX()

@@ -13,7 +13,7 @@ public:
 	Ball(const Vec2& pos, Vec2& vel);
 	void draw(Graphics& gfx) const;
 	void update(float dt);
-	void wallCollision(const Rect& wall);
+	bool wallCollision(const Rect& wall, bool restart_ );
 	void reboundX();
 	void reboundY();
 	void reboundX(const bool& dir);
@@ -30,7 +30,7 @@ public:
 
 private:
 	bool restart = false;
-	static constexpr float radius = 7.0f;
+	static constexpr float radius = 5.0f;
 	Vec2 pos;
 	Vec2 vel;
 	Vec2 prevPos;

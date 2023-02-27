@@ -46,15 +46,14 @@ Game::Game(MainWindow& wnd)
 	
 {
 	offset = getOffset( );
-	ball = Ball( Vec2( 400.0f + offset , ( 500.0f - 0.0f ) ) , Vec2( BALL_SPEED , BALL_SPEED ) );
+	balls[ 0 ] = Ball( Vec2( 400.0f + offset , ( 500.0f - 0.0f ) ) , Vec2( BALL_SPEED , BALL_SPEED ) );
 
 	soundPlay = Sound( L"Sounds\\arkstart.wav" );
 	soundPlay.StopAll( );
 	soundPlay.Play( 1.0f , 0.2f );
 
 	resetMy( );
-	
-	firstLevel.makeActive();
+
 }
 
 void Game::Go()
@@ -63,7 +62,7 @@ void Game::Go()
 	float elapsedTime = ft.Mark();
 	while (elapsedTime > 0.0f)
 	{
-		const float dt = std::min(0.0025f, elapsedTime);
+		const float dt = std::min(0.01f, elapsedTime);
 		UpdateModel(dt);
 		elapsedTime -= dt;
 	}
@@ -80,7 +79,7 @@ void Game::UpdateModel(float dt)
 		if (!pressed)
 		{
 			offset = getOffset( );
-			ball.setPosition(Vec2(400.0f + offset , 500.0f - 15.0f));
+			balls[ 0 ].setPosition( Vec2( 400.0f + offset , 500.0f - 15.0f ) );
 			paddle.setPos(Vec2(400.0f, 500.0f));
 			paddle.lengthPwrUpReset( );
 
@@ -103,7 +102,7 @@ void Game::UpdateModel(float dt)
 		if (!pressed)
 		{
 			offset = getOffset( );
-			ball.setPosition(Vec2(400.0f + offset, 500.0f - 15.0f));
+			balls[ 0 ].setPosition( Vec2( 400.0f + offset , 500.0f - 15.0f ) );
 			paddle.setPos(Vec2(400.0f, 500.0f));
 			paddle.lengthPwrUpReset( );
 
@@ -131,9 +130,13 @@ void Game::UpdateModel(float dt)
 
 	if (start)
 	{
-		if (!spaceClicked)
-			ball.setPosition(Vec2(paddle.getVec().x + offset , 500.0f - 15.0f));
-
+		if ( !spaceClicked )
+		{
+			for ( int i = 0; i < currBalls ; i++ )
+			{
+				balls[ i ].setPosition( Vec2( paddle.getVec( ).x + offset , 500.0f - 15.0f ) );
+			}
+		}
 		if ( wnd.kbd.KeyIsPressed( VK_UP ) && !spaceClicked )
 		{
 			spaceClicked = true;
@@ -142,19 +145,38 @@ void Game::UpdateModel(float dt)
 			soundPlay.Play( 1.0f , 0.25f );
 		}
 
-		if (spaceClicked)
-			ball.update(dt);
+		if ( spaceClicked )
+		{
+			for ( int i = 0 ; i < currBalls ; i++ )
+			{ 
+				balls[ i ].update( dt );
+				if ( currBalls > 1 )
+				{
+					if ( balls[ i ].wallCollision( wall.getWall( ) , false ) )
+					{
+						for ( int f = i; f < currBalls; f++ )
+						{
+							balls[ f ] = balls[ f + 1 ];
+						}
+						currBalls--;
+					}
+				}
+				else
+				{
+					balls[ i ].wallCollision( wall.getWall( ) , true );
+					hasBalls = false;
+				}
+			}
+		}
 
 		paddle.update(wnd.kbd, dt);
-
-		ball.wallCollision( wall.getWall( ) );
-
-		if (ball.getRestart())
+		
+		if (balls[ 0 ].getRestart( ) )
 		{
 			offset = getOffset( );
-			ball.switchRestart();
-			ball.setPosition(Vec2(400.0f + offset, 500.0f - 15.0f));
-			ball.setDirection( Vec2( 0.0f , 5.0f ) );
+			balls[ 0 ].switchRestart( );
+			balls[ 0 ].setPosition( Vec2( 400.0f + offset , 500.0f - 15.0f ) );
+			balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
 			paddle.setPos(Vec2(400.0f, 500.0f));
 			start = false;
 			spaceClicked = false;
@@ -167,34 +189,40 @@ void Game::UpdateModel(float dt)
 		bool collisionHappened = false;
 		float collisionDisSq;
 		int collisionIndex = 0;
+		int ballIndex = 0;
 
-		for (int i = 0; i < nBricks; i++)
+		for ( int i = 0; i < nBricks; i++ )
 		{
-			bricks[i].color();
-			if (bricks[i].isCollidingBall(ball))
+			bricks[ i ].color( dt );
+			for (  int b = 0; b < currBalls ; b++ )
 			{
-				if (brickArray[current2dIndex][1][i] != 0)
+				if ( bricks[ i ].isCollidingBall( balls[ b ] ) )
 				{
-					const float newCollisionDistSq = (ball.getPosition() - bricks[i].getRect().getCenter()).GetLengthSq();
-					if (collisionHappened)
+					if ( brickArray[ current2dIndex ][ 1 ][ i ] != 0 )
 					{
-						if (newCollisionDistSq < collisionDisSq)
+						const float newCollisionDistSq = ( balls[ b ].getPosition( ) - bricks[ i ].getRect( ).getCenter( ) ).GetLengthSq( );
+						if ( collisionHappened )
+						{
+							if ( newCollisionDistSq < collisionDisSq )
+							{
+								collisionDisSq = newCollisionDistSq;
+								collisionIndex = i;
+								ballIndex = b;
+							}
+						}
+						else
 						{
 							collisionDisSq = newCollisionDistSq;
 							collisionIndex = i;
+							collisionHappened = true;
+							ballIndex = b;
 						}
-					}
-					else
-					{
-						collisionDisSq = newCollisionDistSq;
-						collisionIndex = i;
-						collisionHappened = true;
 					}
 				}
 			}
 			for ( PowerUp& power : powers )
 			{
-				for ( int f = 0; f < power.bullets.size(); f++ )
+				for ( int f = 0; f < power.bullets.size( ); f++ )
 				{
 					if ( power.bullets[ f ].brickCollision( bricks[ i ] ) )
 					{
@@ -202,15 +230,15 @@ void Game::UpdateModel(float dt)
 						if ( bricks[ i ].getDestroyed( ) )
 							destroyed++;
 					}
-						
+
 				}
 			}
 		}
 
+		
 		if (collisionHappened)
 		{
 			
-
 			if (brickArray[current2dIndex][1][collisionIndex] == 6 || brickArray[ current2dIndex ][ 1 ][ collisionIndex ] == 7 )
 			{
 				soundPlay = Sound( L"Sounds\\arkstrongbrick.wav" );
@@ -220,19 +248,17 @@ void Game::UpdateModel(float dt)
 				soundPlay = Sound( L"Sounds\\arkbrick.wav" );
 			}
 
-
 			soundPlay.StopAll( );
 			soundPlay.Play( 1.0f , 0.25f );
 			
-
-			bricks[ collisionIndex ].executeBallCollision( ball );
+			bricks[ collisionIndex ].executeBallCollision( balls[ ballIndex ] );
 			
 			if (bricks[collisionIndex].getDestroyed())
 			{
 
 				if ( Random::getRand( 0 , 5 ) == 5)
 				{
-					switch ( Random::getRand( 0 , 1 ) )
+					switch ( Random::getRand( 0 , 2 ) )
 					{
 						case 0:
 						{
@@ -244,8 +270,12 @@ void Game::UpdateModel(float dt)
 							powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::length ) );
 							break;
 						}
+						case 2:
+						{
+							powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::balls ) );
+							break;
+						}
 					}
-					
 				}
 				destroyed++;
 			}
@@ -253,11 +283,14 @@ void Game::UpdateModel(float dt)
 			bricks[collisionIndex].hit = true;
 		}
 
-		if (paddle.ballCollision(ball) &&  !wnd.kbd.KeyIsPressed( VK_SPACE )  )
+		for ( int i = 0 ; i < currBalls; i++ )
 		{
-			soundPlay = Sound( L"Sounds\\arkpad.wav" );
-			soundPlay.StopAll( );
-			soundPlay.Play( 1.0f , 0.25f );
+			if ( paddle.ballCollision( balls[ i ] ) && !wnd.kbd.KeyIsPressed( VK_SPACE ) )
+			{
+				soundPlay = Sound( L"Sounds\\arkpad.wav" );
+				soundPlay.StopAll( );
+				soundPlay.Play( 1.0f , 0.25f );
+			}
 		}
 
 		paddle.wallCollision(wall.getWall());
@@ -275,9 +308,9 @@ void Game::UpdateModel(float dt)
 					{
 						soundPowerUp = Sound( L"Sounds\\arklengthen.wav" );
 						soundPowerUp.StopAll( );
-						soundPowerUp.Play( 1.0f , 0.2f );
+						soundPowerUp.Play( 1.0f , 0.7f );
 						paddle.lengthPwrUp( );
-						offsetMaxMax = ( ( paddle.getRect( ).right - paddle.getRect( ).left ) / 2 ) - 10.0f;
+						offsetMaxMax = ( ( paddle.getRect( ).right - paddle.getRect( ).left ) / 2 ) - 15.0f;
 						offsetMinMax = -offsetMaxMax;
 						break;
 					}
@@ -293,6 +326,24 @@ void Game::UpdateModel(float dt)
 							powers.erase( powers.begin( ) + i );
 						}
 						break;
+					}
+					case PowerUp::powers::balls:
+					{
+						if ( !hasBalls )
+						{
+							currBalls = 3;
+							float offsetX = getOffset( -75.0f , -180.0f , 75.0f , 180.0f );
+							float offsetY = getOffset( -75.0f , -180.0f , 75.0f , 180.0f );
+							balls[ 1 ] = Ball( balls[ 0 ].getPosition( ) , Vec2( balls[ 0 ].getVelocity( ).x + offsetX , ( balls[ 0 ].getVelocity( ).y + offsetY ) ) );
+
+							offsetX = getOffset( -75.0f , -180.0f , 75.0f , 180.0f );
+							offsetY = getOffset( -75.0f , -180.0f , 75.0f , 180.0f );
+							balls[ 2 ] = Ball( balls[ 0 ].getPosition( ) , Vec2( balls[ 0 ].getVelocity( ).x + offsetX, ( balls[ 0 ].getVelocity( ).y + offsetY) ) );
+
+							hasBalls = true;
+						}
+						break;
+
 					}
 				}
 			}
@@ -317,9 +368,6 @@ void Game::UpdateModel(float dt)
 		}
 
 	}
-	else
-	{
-	}
 }
 
 void Game::resetMy()
@@ -333,6 +381,7 @@ void Game::resetMy()
 	offsetMaxMax = 30.0f;
 	offsetMinMax = -30.0f;
 	hasBullet = false;
+	hasBalls = false;
 
 	padX = ((wall.getWall().right - wall.getWall().left) - (nBrickRows * brickWidth)) / 2;
 	padY = ((wall.getWall().bottom - wall.getWall().top) - (nBrickCols * brickHeight)) / 3;
@@ -386,10 +435,22 @@ float Game::getOffset( )
 	return ( Random::getRand( offsetMinMin , offsetMinMax ) );
 }
 
+float Game::getOffset( float minMin, float minMax, float maxMin, float maxMax )
+{
+	if ( Random::getRand( 0 , 1 ) == 1 )
+		return ( Random::getRand( maxMin , maxMax ) );
+
+	return ( Random::getRand( minMin , minMax ) );
+}
+
 void Game::ComposeFrame()
 {
 	wall.draw(gfx);
-	ball.draw(gfx);
+
+	for ( int i = 0; i < currBalls; i++ )
+	{
+		balls[ i ].draw( gfx );
+	}
 
 	for (const Brick& brick : bricks)
 	{

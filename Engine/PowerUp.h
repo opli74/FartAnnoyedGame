@@ -13,7 +13,8 @@ public:
 	enum class powers
 	{
 		bullet,
-		length
+		length,
+		balls
 	};
 
 	class Bullet

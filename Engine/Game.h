@@ -32,8 +32,9 @@
 #include "Screen.h"
 #include "PowerUp.h"
 #include "SoundEffect.h"
-
+#include "Text.h"
 #include <random>
+#include <string>
 
 class Game
 {
@@ -48,6 +49,7 @@ private:
 	void resetMy();
 	float getOffset( );
 	float getOffset( float minMin , float minMax , float maxMin , float maxMax );
+	std::string removeTail( std::string& str );
 	/********************************/
 	/*  User Functions              */
 	/********************************/
@@ -58,12 +60,15 @@ private:
 	/*  User Variables  */
 	bool start = false , spaceClicked = false;
 
+	float time = 0.0f;
+
 	static constexpr float brickWidth = 42.0f;
 	static constexpr float brickHeight = 20.0f;
 	int nBrickRows;
 	int nBrickCols;
 	int nBricks;
-	std::vector<Brick> bricks;
+	/*std::vector<Brick> bricks;*/
+	Brick* bricks = nullptr;
 	std::vector<PowerUp> powers;
 	int currBalls = 1;
 	static constexpr int maxBalls = 3;
@@ -74,6 +79,10 @@ private:
 	Sound soundPowerUp;
 	Paddle paddle;
 	Mouse mouse;
+	Text text;
+
+	std::string txt = "abcdefghijklmnopqrstuvwxyz";
+	std::string nums = "0123456789";
 
 	int current2dIndex = 0;
 
@@ -81,9 +90,9 @@ private:
 
 	float offset = 0.0f;
 	float offsetMinMin = -10.0f;
-	float offsetMinMax = -30.0f;
+	float offsetMinMax = -25.0f;
 	float offsetMaxMin = 10.0f;
-	float offsetMaxMax = 30.0f;
+	float offsetMaxMax = 25.0f;
 
 	int destroyed = 0;
 	int indestructable = 0;
@@ -93,20 +102,21 @@ private:
 	float padY;
 	Vec2 topLeft;
 
-	bool hasBullet = false, hasBalls = false;
+	bool hasBullet = false, hasBalls = false, paddleHasBall = false;
+	float relativeX = 0.0f;
 
-	std::vector<std::vector<std::vector<int>>> brickArray = {
+	static constexpr int brickArray[ 4 ][ 2 ][ 200 ] = {
 
-		{ 
-			{12, 6},
+		{
+			{11, 6},
 
 			{
-			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-			4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+			4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
 			}
 
 		},
@@ -166,7 +176,7 @@ private:
 			{ 13 , 11 },
 
 			{
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

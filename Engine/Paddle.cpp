@@ -55,7 +55,6 @@ bool Paddle::ballCollision(Ball& ball)
 					ballPos.y += rect.bottom - ball.getRect().top;
 				else
 					ballPos.y -= ball.getRect().bottom - rect.top;
-				test = true;
 			}
 		}
 		else
@@ -69,7 +68,6 @@ bool Paddle::ballCollision(Ball& ball)
 					ballPos.y += rect.bottom - ball.getRect().top;
 				else
 					ballPos.y -= ball.getRect().bottom - rect.top;
-				test = true;
 			}
 			else
 			{
@@ -159,3 +157,4 @@ void Paddle::setPos(const Vec2& pos_)
 {
 	pos = pos_;
 }
+

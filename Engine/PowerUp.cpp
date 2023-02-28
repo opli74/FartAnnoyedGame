@@ -77,6 +77,7 @@ Rect PowerUp::getBullets( )
 			return bullet.getRect( );
 		}
 	}
+	return Rect( NULL , NULL , NULL , NULL );
 }
 
 bool PowerUp::shot( Paddle& paddle , const Keyboard& kdb , float dt)

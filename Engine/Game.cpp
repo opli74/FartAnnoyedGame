@@ -20,6 +20,7 @@
  ******************************************************************************************/
 #include "MainWindow.h"
 #include "Game.h"
+#include <math.h>
 
 namespace Random
 {
@@ -41,12 +42,12 @@ Game::Game(MainWindow& wnd)
 	:
 	wnd(wnd),
 	gfx(wnd),
-	wall(Rect(110.0f, 690.0f, 0.0f, 600.0f), Colors::MakeRGB(150,150,150)),
-	paddle( Vec2( 400.0f , 500.0f ) , PADDLE_HALF_WIDTH , 8 )
+	wall(Rect(110.0f, 690.0f, 45.0f, 600.0f), Colors::MakeRGB(150,150,150)),
+	paddle( Vec2( 400.0f , PADDLE_Y ) , PADDLE_HALF_WIDTH , 8 )
 	
 {
 	offset = getOffset( );
-	balls[ 0 ] = Ball( Vec2( 400.0f + offset , ( 500.0f - 0.0f ) ) , Vec2( BALL_SPEED , BALL_SPEED ) );
+	balls[ 0 ] = Ball( Vec2( 400.0f + offset , ( PADDLE_Y - 15.0f ) ) , Vec2( BALL_SPEED , BALL_SPEED ) );
 
 	soundPlay = Sound( L"Sounds\\arkstart.wav" );
 	soundPlay.StopAll( );
@@ -62,7 +63,7 @@ void Game::Go()
 	float elapsedTime = ft.Mark();
 	while (elapsedTime > 0.0f)
 	{
-		const float dt = std::min(0.01f, elapsedTime);
+		const float dt = std::min(0.005f, elapsedTime);
 		UpdateModel(dt);
 		elapsedTime -= dt;
 	}
@@ -79,8 +80,8 @@ void Game::UpdateModel(float dt)
 		if (!pressed)
 		{
 			offset = getOffset( );
-			balls[ 0 ].setPosition( Vec2( 400.0f + offset , 500.0f - 15.0f ) );
-			paddle.setPos(Vec2(400.0f, 500.0f));
+			balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 15.0f ) );
+			paddle.setPos(Vec2(400.0f, PADDLE_Y ));
 			paddle.lengthPwrUpReset( );
 
 			if (current2dIndex > 0)
@@ -88,7 +89,9 @@ void Game::UpdateModel(float dt)
 
 			resetMy();
 
+			start = false;
 			pressed = true;
+			spaceClicked = false;
 
 			soundPlay = Sound( L"Sounds\\arkstart.wav" );
 			soundPlay.StopAll( );
@@ -102,8 +105,8 @@ void Game::UpdateModel(float dt)
 		if (!pressed)
 		{
 			offset = getOffset( );
-			balls[ 0 ].setPosition( Vec2( 400.0f + offset , 500.0f - 15.0f ) );
-			paddle.setPos(Vec2(400.0f, 500.0f));
+			balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 15.0f ) );
+			paddle.setPos(Vec2(400.0f, PADDLE_Y ));
 			paddle.lengthPwrUpReset( );
 
 			start = false;
@@ -132,17 +135,27 @@ void Game::UpdateModel(float dt)
 	{
 		if ( !spaceClicked )
 		{
-			for ( int i = 0; i < currBalls ; i++ )
+			if ( paddleHasBall )
+			{	
+				balls[ 0 ].setPosition( Vec2( paddle.getVec( ).x + relativeX , PADDLE_Y - 15.0f ) );
+
+			}
+			else
 			{
-				balls[ i ].setPosition( Vec2( paddle.getVec( ).x + offset , 500.0f - 15.0f ) );
+				for ( int i = 0; i < currBalls; i++ )
+				{
+					balls[ i ].setPosition( Vec2( paddle.getVec( ).x + offset , PADDLE_Y - 15.0f ) );
+				}
 			}
 		}
 		if ( wnd.kbd.KeyIsPressed( VK_UP ) && !spaceClicked )
 		{
 			spaceClicked = true;
+			paddleHasBall = false;
 			soundPlay = Sound( L"Sounds\\arkpad.wav" );
 			soundPlay.StopAll( );
 			soundPlay.Play( 1.0f , 0.25f );
+
 		}
 
 		if ( spaceClicked )
@@ -175,9 +188,9 @@ void Game::UpdateModel(float dt)
 		{
 			offset = getOffset( );
 			balls[ 0 ].switchRestart( );
-			balls[ 0 ].setPosition( Vec2( 400.0f + offset , 500.0f - 15.0f ) );
+			balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 15.0f ) );
 			balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
-			paddle.setPos(Vec2(400.0f, 500.0f));
+			paddle.setPos(Vec2(400.0f, PADDLE_Y ));
 			start = false;
 			spaceClicked = false;
 			soundPlay = Sound( L"Sounds\\arkrestart.wav" );
@@ -287,6 +300,13 @@ void Game::UpdateModel(float dt)
 		{
 			if ( paddle.ballCollision( balls[ i ] ) && !wnd.kbd.KeyIsPressed( VK_SPACE ) )
 			{
+				if ( !( currBalls > 1 ) )
+				{
+					spaceClicked = false;
+					paddleHasBall = true;
+					relativeX = balls[ 0 ].getPosition( ).x - paddle.getVec( ).x;
+				}
+
 				soundPlay = Sound( L"Sounds\\arkpad.wav" );
 				soundPlay.StopAll( );
 				soundPlay.Play( 1.0f , 0.25f );
@@ -368,6 +388,7 @@ void Game::UpdateModel(float dt)
 		}
 
 	}
+	time += dt;
 }
 
 void Game::resetMy()
@@ -392,13 +413,14 @@ void Game::resetMy()
 	}
 	topLeft = Vec2((wall.getWall().left + padX), (wall.getWall().top + padY));
 
-	bricks.clear( );
+	delete[ ] bricks;
 	for ( PowerUp& e : powers )
 	{
 		e.bullets.clear( );
 	}
 	powers.clear( );
 
+	bricks = new Brick[nBricks];
 	int i = 0;
 	for (int y = 0; y < nBrickCols; y++)
 	{
@@ -406,20 +428,20 @@ void Game::resetMy()
 		{
 			if (brickArray[current2dIndex][1][i] > 0 && brickArray[current2dIndex][1][i] < 6)
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), brickColors[(brickArray[current2dIndex][1][i]) - 1], 1, false));
+				bricks[ i ] = (Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), brickColors[(brickArray[current2dIndex][1][i]) - 1], 1, false));
 			}
 			else if (brickArray[current2dIndex][1][i] == 6)
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::MakeRGB(255, 137, 0), 1, true));
+				bricks[ i ] = (Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::MakeRGB(255, 137, 0), 1, true));
 				indestructable++;
 			}
 			else if (brickArray[current2dIndex][1][i] == 7)
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Gray, 2, false));
+				bricks[ i ] = (Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Gray, 2, false));
 			}
 			else
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Black, 0, false));
+				bricks[ i ] = (Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Black, 0, false));
 				nonBrickAmount++;
 			}
 			i++;
@@ -431,8 +453,9 @@ float Game::getOffset( )
 {
 	if ( Random::getRand( 0 , 1 ) == 1 )
 		return ( Random::getRand( offsetMaxMin , offsetMaxMax ) );
-
-	return ( Random::getRand( offsetMinMin , offsetMinMax ) );
+	
+	float rand = Random::getRand( std::abs( offsetMinMin ) , std::abs( offsetMinMax ) );
+	return -rand;
 }
 
 float Game::getOffset( float minMin, float minMax, float maxMin, float maxMax )
@@ -440,7 +463,27 @@ float Game::getOffset( float minMin, float minMax, float maxMin, float maxMax )
 	if ( Random::getRand( 0 , 1 ) == 1 )
 		return ( Random::getRand( maxMin , maxMax ) );
 
-	return ( Random::getRand( minMin , minMax ) );
+	float rand = Random::getRand( std::abs(minMin) , std::abs(minMax) );
+	return -rand;
+}
+
+std::string Game::removeTail( std::string& str )
+{
+	std::string str_ = str;
+	int index = 0;
+
+	for ( int i = 0; i < str.size( ) - 1; i++ )
+	{
+		if ( str[ i ] == '.' )
+		{
+			index = i;
+			break;
+		}
+	}
+
+	str_.erase( str_.begin( ) + index + 3 , str_.end( ) );
+
+	return str_;
 }
 
 void Game::ComposeFrame()
@@ -452,9 +495,9 @@ void Game::ComposeFrame()
 		balls[ i ].draw( gfx );
 	}
 
-	for (const Brick& brick : bricks)
+	for (int i = 0; i < nBricks; i++)
 	{
-		brick.draw(gfx);
+		bricks[ i ].draw( gfx );
 	}
 
 	for ( PowerUp& power : powers)
@@ -467,6 +510,8 @@ void Game::ComposeFrame()
 		}
 	}
 
-	paddle.draw(gfx);
+	paddle.draw( gfx );
+
+	text.drawText( gfx , "Time: " + removeTail(std::to_string( roundf(time * 100) / 100 )), Vec2( 5.0f , 15.0f ) , 2 );
 
 }

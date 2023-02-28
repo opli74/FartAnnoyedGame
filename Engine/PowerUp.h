@@ -14,7 +14,8 @@ public:
 	{
 		bullet,
 		length,
-		balls
+		balls,
+		hold
 	};
 
 	class Bullet

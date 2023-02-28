@@ -3,7 +3,7 @@
 #include "Vec2.h"
 #include "Graphics.h"
 #include "Rect.h"
-#define BALL_SPEED 425.0f
+
 
 
 class Ball
@@ -30,11 +30,9 @@ public:
 
 private:
 	bool restart = false;
-	static constexpr float radius = 5.0f;
+	static constexpr float radius = 7.0f;
 	Vec2 pos;
 	Vec2 vel;
 	Vec2 prevPos;
-
-
 };
 

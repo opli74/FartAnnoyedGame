@@ -25,8 +25,8 @@
 #include "ChiliException.h"
 #include "Colors.h"
 #include "Rect.h"
+#include "Includes.h"
 
-#define PADDLE_HALF_WIDTH 50.0f
 
 class Graphics
 {

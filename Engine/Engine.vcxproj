@@ -150,6 +150,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="GetRandom.h" />
+    <ClInclude Include="Includes.h" />
     <ClInclude Include="Keyboard.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Mouse.h" />
@@ -160,6 +161,7 @@
     <ClInclude Include="Sound.h" />
     <ClInclude Include="SoundEffect.h" />
     <ClInclude Include="SpriteCodex.h" />
+    <ClInclude Include="Text.h" />
     <ClInclude Include="Vec2.h" />
     <ClInclude Include="Wall.h" />
   </ItemGroup>
@@ -179,6 +181,7 @@
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Sound.cpp" />
     <ClCompile Include="SpriteCodex.cpp" />
+    <ClCompile Include="Text.cpp" />
     <ClCompile Include="Vec2.cpp" />
     <ClCompile Include="Wall.cpp" />
   </ItemGroup>

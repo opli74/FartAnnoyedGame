@@ -3,7 +3,6 @@
 #include <Math.h>
 
 
-
 Paddle::Paddle(const Vec2& pos, float halfWidth, float halfHeight)
 	:
 	pos(pos),
@@ -56,6 +55,11 @@ bool Paddle::ballCollision(Ball& ball)
 				else
 					ballPos.y -= ball.getRect().bottom - rect.top;
 			}
+			else
+			{
+				ballPos.y -= ball.getRect( ).top - rect.bottom;
+				ball.reboundY( true );
+			}
 		}
 		else
 		{
@@ -75,7 +79,7 @@ bool Paddle::ballCollision(Ball& ball)
 				ballPos.y -= ball.getRect().bottom - rect.top;
 				const float relativeX = ballCurrPos.x - pos.x;
 				const float bounceAngle = relativeX * (3 * float(M_PI) / 2) / (pos.x) + float(M_PI) / 2;
-				ball.setDirection(Vec2(-cosf(bounceAngle), -sinf(bounceAngle)).Normalize() * BALL_SPEED);
+				ball.setDirection(Vec2(-cosf(bounceAngle), -sinf(bounceAngle)).Normalize() * G_BALL_SPEED);
 				test = true;
 			}
 		}
@@ -104,7 +108,7 @@ void Paddle::wallCollision(const Rect& wall)
 	}
 }
 
-void Paddle::update(const Keyboard& kbd, float dt)
+void Paddle::update(const Keyboard& kbd, float dt, float time)
 {
 	if ( incLength )
 	{
@@ -130,7 +134,7 @@ void Paddle::update(const Keyboard& kbd, float dt)
 void Paddle::lengthPwrUp()
 {
 	if ( longHalfWidth < maxLength )
-		longHalfWidth += 5.0f;
+		longHalfWidth += 3.0f;
 	incLength = true;
 }
 
@@ -142,7 +146,7 @@ void Paddle::lengthPwrUpReset( )
 
 Rect Paddle::getRect() const
 {
-	if (incLength )
+	if ( incLength )
 		return Rect::fromCenter(pos, longHalfWidth, halfHeight);
 
 	return Rect::fromCenter( pos , halfWidth , halfHeight );
@@ -156,5 +160,10 @@ Vec2 Paddle::getVec() const
 void Paddle::setPos(const Vec2& pos_)
 {
 	pos = pos_;
+}
+
+void Paddle::setSpeed( )
+{
+	speed = G_BALL_SPEED + 50.0f;
 }
 

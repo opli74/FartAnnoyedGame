@@ -1,30 +1,69 @@
 #include "Brick.h"
 
-Brick::Brick(const Rect& rect, Color c, const int health, bool type)
+Brick::Brick(const Rect& rect, Color c_, const int health, Type type)
 	:
 	rect(rect),
-	c(c),
 	health(health),
 	type( type )
 {
 	if ( health == 0 )
 		destroyed = true;
+	c = c_;
+
+	d.SetR( unsigned char(float( c.GetR( ) ) * 0.85f) );
+	d.SetG( unsigned char( float( c.GetG( ) ) * 0.85f ) );
+	d.SetB( unsigned char( float( c.GetB( ) ) * 0.85f ) );
+
+	l.SetR( c.GetR( ) + unsigned char( ( float( 255u - c.GetR( ) ) * 0.4f ) ) );
+	l.SetG( c.GetG( ) + unsigned char( ( float( 255u - c.GetG( ) ) * 0.4f ) ) );
+	l.SetB( c.GetB( ) + unsigned char( ( float( 255u - c.GetB( ) ) * 0.4f ) ) );
 }
 	
 void Brick::draw(Graphics& gfx) const
 {
 	if (!destroyed)
 	{
-		if (hit)
-			gfx.DrawRect(rect.getExpanded(-padding), Colors::White);
-		else
-			gfx.DrawRect(rect.getExpanded(-padding), c);
 
-		gfx.DrawRect(Rect(rect.left + padding, rect.right - padding, (rect.bottom - padding) - width, (rect.bottom - padding)), d);
-		gfx.DrawRect(Rect((rect.right - padding) - width, (rect.right - padding), rect.top + padding, rect.bottom - padding), d);
+		gfx.DrawRect(rect.getExpanded(-padding), c);
 
-		gfx.DrawRect(Rect(rect.left + padding, rect.right - padding, rect.top + padding, (rect.top + padding) + width), l);
-		gfx.DrawRect(Rect(rect.left + padding, (rect.left + padding) + width, rect.top + padding, rect.bottom - padding), l);
+		if ( type == Type::extra || type == Type::invinc )
+		{
+			gfx.DrawRect( Rect( rect.left + padding , rect.right - padding , rect.top + padding , ( rect.top + padding ) + width + 1) , l );
+			gfx.DrawRect( Rect( rect.left + padding , ( rect.left + padding ) + width + 1, rect.top + padding , rect.bottom - padding ) , l );
+			gfx.DrawRect( Rect( rect.left + padding , rect.right - padding , ( rect.bottom - padding ) - width - 1, ( rect.bottom - padding ) ) , d );
+			gfx.DrawRect( Rect( ( rect.right - padding ) - width - 1 , ( rect.right - padding ) , rect.top + padding , rect.bottom - padding ) , d );
+		}
+
+		if ( hit )
+		{
+			switch ( times )
+			{
+				case 1:
+				{
+					gfx.DrawRect( Rect( rect.left + padding + 25 , rect.right - padding , ( rect.bottom - padding ) - width - 1 , ( rect.bottom - padding ) ) , Colors::MakeRGB( 225 , 225, 225 ) );
+					gfx.DrawRect( Rect( ( rect.right - padding ) - width - 1 , ( rect.right - padding ) , rect.top + padding + 5, rect.bottom - padding ) , Colors::MakeRGB( 225 , 225 , 225 ) );
+					break;
+				}
+				case 2:
+				{
+					gfx.DrawRect( Rect( rect.left + padding + 10, rect.right - padding , ( rect.bottom - padding ) - width - 1 , ( rect.bottom - padding ) ) , Colors::MakeRGB( 225 , 225 , 225 ) );
+					gfx.DrawRect( Rect( ( rect.right - padding ) - width - 1 , ( rect.right - padding ) , rect.top + padding, rect.bottom - padding ) , Colors::MakeRGB( 225 , 225 , 225 ) );
+					break;
+				}
+				case 3:
+				{
+					gfx.DrawRect( rect.getExpanded( -padding ) , Colors::MakeRGB( 225 , 225 , 225 ) );
+					break;
+				}
+				case 4:
+				{
+					gfx.DrawRect( Rect( rect.left + padding , rect.right - padding - 10 , rect.top + padding , ( rect.top + padding ) + width + 1 ) , Colors::MakeRGB( 225 , 225 , 225 ) );
+					gfx.DrawRect( Rect( rect.left + padding , ( rect.left + padding ) + width + 1 , rect.top + padding , rect.bottom - padding ) , Colors::MakeRGB( 225 , 225 , 225 ) );
+					break;
+				}
+			}
+				
+		}
 
 
 	}
@@ -32,9 +71,10 @@ void Brick::draw(Graphics& gfx) const
 
 bool Brick::isCollidingBall(const Ball& ball)
 {
-	if ( type )
+	if ( type == Type::invinc )
 	{
 		destroyed = false;
+		health = 999;
 	}
 	else if ( health > 0 )
 	{
@@ -106,6 +146,11 @@ Color Brick::getColor() const
 	return c;
 }
 
+Brick::Type Brick::getType( ) const
+{
+	return type;
+}
+
 void Brick::setColor(const Color& in)
 {
 	c = in;
@@ -116,11 +161,12 @@ Rect Brick::getRect() const
 	return rect;
 }
 
-bool Brick::getDestroyed()
+bool Brick::getDestroyed() 
 {
-	if ( type )
+	if ( type == Type::invinc )
 	{
 		destroyed = false;
+		health = 999;
 	}
 	else if ( health > 0 )
 	{
@@ -133,16 +179,23 @@ bool Brick::getDestroyed()
 	return destroyed;
 }
 
-void Brick::color(float dt)
+void Brick::color( float dt )
 {
-	if (hit)
+	if ( hit )
 	{
 		frames += dt;
-		if (frames > 0.035f)
+		if ( frames > 0.065f )
 		{
+
 			frames = 0.0f;
-			hit = false;
+			times++;
+
+			if ( times >= 5 )
+			{
+				hit = false;
+				times = 0;
+			}
 		}
-			
+
 	}
 }

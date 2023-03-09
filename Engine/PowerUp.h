@@ -15,7 +15,7 @@ public:
 		bullet,
 		length,
 		balls,
-		hold
+		block
 	};
 
 	class Bullet
@@ -52,7 +52,7 @@ public:
 	bool wallCollision(const Rect& wall);
 	void turnOn( );
 	PowerUp::powers getPower( );
-	bool shot( Paddle& paddle , const Keyboard& kdb, float dt );
+	bool shot( Paddle& paddle , const Keyboard& kdb, float dt , bool shoot);
 	Rect getRect() const;
 
 public:

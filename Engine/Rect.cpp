@@ -27,6 +27,13 @@ bool Rect::isOverLapping(const Rect& rect) const
 		&& bottom > rect.top && top < rect.bottom;
 }
 
+bool Rect::isOverLapping( const Vec2& point ) const
+{
+	return right > point.x && left < point.x
+		&& bottom > point.y && top < point.y;
+}
+
+
 Rect Rect::fromCenter(const Vec2& center, float halfWidth, float halfHeight)
 {
 	const Vec2 half(halfWidth, halfHeight);

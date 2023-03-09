@@ -8,19 +8,24 @@ PowerUp::PowerUp(Rect& rect, PowerUp::powers in)
 {
 	switch ( type )
 	{
-		case PowerUp::powers::bullet:
+		case powers::bullet:
 		{
 			col = Colors::MakeRGB( 10 , 10 , 10 );
 			break;
 		}
-		case PowerUp::powers::length:
+		case powers::length:
 		{
 			col = Colors::Magenta;
 			break;
 		}
-		case PowerUp::powers::balls:
+		case powers::balls:
 		{
 			col = Colors::Green;
+			break;
+		}
+		case powers::block:
+		{
+			col = Colors::Red;
 			break;
 		}
 	}
@@ -80,15 +85,18 @@ Rect PowerUp::getBullets( )
 	return Rect( NULL , NULL , NULL , NULL );
 }
 
-bool PowerUp::shot( Paddle& paddle , const Keyboard& kdb , float dt)
+bool PowerUp::shot( Paddle& paddle , const Keyboard& kdb , float dt, bool shoot)
 {
-	frames += dt;
-	if ( powerOn && kdb.KeyIsPressed( VK_SPACE ) && frames >= bulletWait)
+	if ( shoot )
 	{
-		frames = 0.0f;
-		bullets.push_back( Bullet( Vec2(paddle.getVec().x + 15.0f, paddle.getVec( ).y ) , Vec2( 0, - 500.0f) ) );
-		bullets.push_back( Bullet( Vec2( paddle.getVec( ).x - 15.0f , paddle.getVec( ).y ) , Vec2( 0 , -500.0f ) ) );
-		return true;
+		frames += dt;
+		if ( powerOn && kdb.KeyIsPressed( VK_SPACE ) && frames >= bulletWait )
+		{
+			frames = 0.0f;
+			bullets.push_back( Bullet( Vec2( paddle.getVec( ).x + 15.0f , paddle.getVec( ).y ) , Vec2( 0 , -500.0f ) ) );
+			bullets.push_back( Bullet( Vec2( paddle.getVec( ).x - 15.0f , paddle.getVec( ).y ) , Vec2( 0 , -500.0f ) ) );
+			return true;
+		}
 	}
 	return false;
 }

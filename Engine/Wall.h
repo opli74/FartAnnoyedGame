@@ -7,7 +7,8 @@
 class Wall
 {
 public:
-	Wall(const Rect& rect, const Color& c);
+	Wall(const Rect& rect, const Color& c, bool type);
+	Wall( const Rect& rect , const Color& c , int x, int y, bool type );
 	Rect getWall() const;
 	void draw(Graphics& gfx) const;
 	void drawBorder(Graphics& gfx) const;
@@ -36,6 +37,8 @@ private:
 	float cellH;
 
 	Vec2 topLeft;
+
+	bool type;
 
 };
 

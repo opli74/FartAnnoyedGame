@@ -7,31 +7,42 @@
 
 class Brick
 {
+
+
 public: 
+	enum class Type
+	{
+		normal ,
+		extra ,
+		invinc
+	};
+
 	Brick() = default;
-	Brick(const Rect& rect, Color c, const int health, bool type);
+	Brick(const Rect& rect, Color c_, const int health, Type type);
 	void draw(Graphics& gfx) const;
 	bool isCollidingBall(const Ball& ball);
 	void executeBallCollision(Ball& ball);
 	void collision( );
 	Color getColor() const;
+	Type getType( ) const;
 	void setColor(const Color& in);
 	Rect getRect() const;
-	bool getDestroyed();
+	bool getDestroyed(); 
 	void color(float dt);
 
 public:
 	bool hit = false;
+	int health;
 
 private:
-	
+
 	float frames = 0.0f;
 	static constexpr float padding = 1.0f;
 	Rect rect;
-	Color c = Colors::MakeRGB(255, 137, 0) , l = Colors::MakeRGB(230, 230, 230) , d = Colors::MakeRGB(130, 130, 130);;
+	Color c = Color( NULL , NULL , NULL ) , l = Color( NULL , NULL , NULL ) , d = Color( NULL , NULL , NULL );
 	bool destroyed = false;
 	float width = 1.0f;
-	int health;
-	bool type;
+	int times = 0;
+	Type type;
 };
 

@@ -65,6 +65,22 @@ public:
 	{
 		DrawRect(int(rect.left), int(rect.top), int(rect.right), int(rect.bottom), c);
 	}
+	void DrawRect( const Rect& rect , Color c , int width)
+	{
+
+		if ( ( int( rect.right - rect.left ) / 2 ) < width  || ( int( rect.bottom - rect.top ) / 2 ) < width )
+		{
+			DrawRect( int( rect.left ) , int( rect.top ) , int( rect.right ) , int( rect.bottom ) , c );
+			return;
+		}
+		DrawRect( int( rect.left ) , int( rect.top ) , int( rect.right ) , int( rect.top ) + width , c );
+
+		DrawRect( int( rect.left ) , int( rect.bottom ) , int( rect.right ) , int( rect.bottom ) - width , c );
+
+		DrawRect( int( rect.left ) , int( rect.top ) , int( rect.left ) + width , int( rect.bottom ) , c );
+
+		DrawRect( int( rect.right ) , int( rect.top ) , int( rect.right ) - width , int( rect.bottom ) , c );
+	}
 	void DrawCircle( int x,int y,int radius,Color c );
 	bool timer( float dt , bool& operations , float amountTime );
 	bool timer( float dt , float amountTime );

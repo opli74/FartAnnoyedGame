@@ -1,9 +1,10 @@
 #include "Wall.h"
 
-Wall::Wall(const Rect& rect, const Color& c)
+Wall::Wall(const Rect& rect, const Color& c , bool type )
     :
     rect(rect),
-    c(c)
+    c(c),
+    type( type )
 {
     w = (rect.right - width) - (rect.left + width); 
     h = (rect.bottom - width) - (rect.top + width);
@@ -14,6 +15,26 @@ Wall::Wall(const Rect& rect, const Color& c)
     topLeft = Vec2(rect.left + width, rect.top + width);
 }
 
+Wall::Wall( const Rect& rect , const Color& c , int x , int y , bool type )
+    :
+    rect( rect ) ,
+    c( c ) ,
+    type( type )
+
+{
+    cellX = x;
+    cellY = y;
+
+    w = ( rect.right - width ) - ( rect.left + width );
+    h = ( rect.bottom - width ) - ( rect.top + width );
+
+    cellW = w / float( cellX );
+    cellH = h / float( cellY );
+
+    topLeft = Vec2( rect.left + width , rect.top + width );
+    
+}
+
 Rect Wall::getWall() const
 {
     return Rect((rect.left + width), (rect.right - width), (rect.top + width), (rect.bottom - width));
@@ -21,7 +42,8 @@ Rect Wall::getWall() const
 
 void Wall::draw(Graphics& gfx) const
 {
-    drawBorder(gfx);
+    if ( type )
+        drawBorder(gfx);
     drawBackground(gfx);
 }
 
@@ -96,8 +118,6 @@ void Wall::drawBackground(Graphics& gfx) const
                 if (x % 2 == 0)
                 {
                     gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), cellW, cellH), greyOne);
-                    //gfx.DrawRect(Rect(topLeft + Vec2((x * cellW) + 1, (y * cellH) + 1), cellW - 1, 1), d);
-                    //gfx.DrawRect(Rect(topLeft + Vec2((x * cellW) + 1, (y * cellH) + 1), 1, cellH - 1), d);
                 }
 
                 else
@@ -106,8 +126,6 @@ void Wall::drawBackground(Graphics& gfx) const
                 if (x % 2 != 0)
                 {
                     gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), cellW, cellH), greyOne);
-                    //gfx.DrawRect(Rect(topLeft + Vec2((x * cellW) + 1, (y * cellH) + 1), cellW - 1, 1), d);
-                    //gfx.DrawRect(Rect(topLeft + Vec2((x * cellW) + 1, (y * cellH) + 1), 1, cellH - 1), d);
                 }
 
                 else

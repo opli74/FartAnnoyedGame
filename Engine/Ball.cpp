@@ -6,12 +6,12 @@ Ball::Ball(const Vec2& pos, Vec2& vel_)
 	:
 	pos(pos)
 {
-	vel = (Vec2( vel_.x , vel_.y ).Normalize( ) * BALL_SPEED);
+	vel = (Vec2( vel_.x , vel_.y ).Normalize( ) * G_BALL_SPEED);
 }
 
 void Ball::draw(Graphics& gfx) const
 {
-	SpriteCodex::DrawBall(pos, gfx);
+	SpriteCodex::DrawBall(pos, gfx, c);
 }
 
 void Ball::update(float dt)
@@ -32,7 +32,7 @@ bool Ball::wallCollision(const Rect& wall, bool restart_)
 	else if (rect.right > wall.right)
 	{
 		pos.x -= rect.right - wall.right;
-		reboundX();;
+		reboundX();
 	}
 	if (rect.top < wall.top)
 	{
@@ -44,6 +44,7 @@ bool Ball::wallCollision(const Rect& wall, bool restart_)
 		if (  restart_  )
 			restart = true;
 
+		reboundY( );
 		return true;
 	}
 
@@ -101,9 +102,26 @@ Rect Ball::getRect() const
 	return Rect::fromCenter(pos, radius, radius);
 }
 
+void Ball::anim( float dt )
+{
+	frames += dt;
+	if ( frames > 0.5f && !swapped )
+	{
+		c = Colors::Cyan;
+		frames = 0.0f;
+		swapped = true;
+	}
+	else if ( frames > 0.5f && swapped )
+	{
+		c = Colors::Red;
+		frames = 0.0f;
+		swapped = false;
+	}
+}
+
 void Ball::setDirection( Vec2& vel_ )
 {
-	vel = Vec2(vel_.x, vel_.y).Normalize( ) * BALL_SPEED;
+	vel = Vec2(vel_.x, vel_.y).Normalize( ) * G_BALL_SPEED;
 }
 
 void Ball::setPosition(const Vec2& pos_)

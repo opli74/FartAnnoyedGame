@@ -8,10 +8,12 @@ class Text
 public:
 	Text( ) = default;
 
-	void drawText( Graphics& gfx , const std::string& text , Vec2 pos, int size);
+	void drawText( Graphics& gfx , const std::string& text , const Vec2& pos, const Color& c , int size, bool center);
+	void drawText( Graphics& gfx , const std::string& text , const Vec2& pos , const Color& c , int size );
+	float getLength( const std::string& text , int size);
 
 private:
-	void drawLetter( int e , int size , Graphics& gfx , Vec2& pos , int f );
+	void drawLetter( int e , int size , Graphics& gfx , const Vec2& pos , const Color& c , int f );
 
 private:
 

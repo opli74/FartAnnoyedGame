@@ -355,10 +355,9 @@ void Graphics::DrawCircle( int x,int y,int radius,Color c )
 
 bool Graphics::timer( float dt , bool& operations , float amountTime )
 {
-	amountTime = amountTime * 60.0f;
 	if ( !operations )
 	{
-		time += dt * 60.0f;
+		time += dt;
 
 		if ( time >= amountTime )
 		{

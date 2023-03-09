@@ -26,13 +26,17 @@ public:
 	void setPosition(const Vec2& pos_);
 	void switchRestart();
 	Rect getRect() const;
-
+	void anim( float dt );
 
 private:
 	bool restart = false;
-	static constexpr float radius = 7.0f;
+	static constexpr float radius = 2.0f;
+
 	Vec2 pos;
 	Vec2 vel;
 	Vec2 prevPos;
+	Color c = Colors::Red;
+	float frames = 0.0f;
+	bool swapped = false;
 };
 

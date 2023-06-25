@@ -48,8 +48,9 @@ public:
 private:
 	void ComposeFrame();
 	void UpdateModel(float dt);
-	void resetMy();
-	void destroy( );
+	void changeLevel();
+	void scoreScreenChange( );
+	void menuScreenChange( );
 	float getOffset( );
 	float getOffset( float minMin , float minMax , float maxMin , float maxMax );
 	std::string removeTail( std::string& str );
@@ -109,6 +110,8 @@ private:
 	static constexpr int screenQuarterWidth = 200;
 	static constexpr int screen3QuarterWidth = 600;
 
+	int lives = 6;
+	std::string scoreText = "you win";
 
 	//to keep track of volumes
 	float soundEffectVol = 0.3f;
@@ -129,6 +132,8 @@ private:
 	Box boxHard = Box( hard , Colors::White , menuBoxCol , Colors::Red , "hard" , 4 , 2 );
 
 	bool soundMusicWait = false , soundMusicChange = false;
+
+	bool boxSfxHover = false , boxMusicHover = false , boxMusicHoverActive = false, boxSfxHoverActive = false;
 	Color soundBoxCol = Colors::Gray , soundVolCol = Colors::MakeRGB( 170, 170, 170);
 
 	float soundBoxW = 75.0f, soundBoxH = 4.0f;
@@ -148,9 +153,21 @@ private:
 	Box boxSfxVol = Box( sfxVolRecVol , soundVolCol );
 	Box boxMusicVol = Box( musicVolRecVol , soundVolCol );
 
+	//return box
+	Rect returnRectGame = Rect::fromCenter( Vec2( 745.0f , gfx.ScreenHeight / 2 ) , 50.0f , 15.0f );
+ 	Box returnBoxGame = Box( returnRectGame , Colors::White, menuBoxCol , Colors::White, "return", 2 , 2);
+
+	Rect returnRectScore = Rect::fromCenter( Vec2( screenHalfWidth , screen2ThirdHeight + 45) , 75.0f , 20.0f );
+	Box returnBoxScore = Box( returnRectScore , Colors::White , menuBoxCol , Colors::White , "return" , 3 , 2 );
+
+	bool returnHover = false;
+
+
 	Vec2 mouse;
 
 	bool start = false , spaceClicked = false , menuScreen = true , scoreScreen = false , f = false , brickAnim = true , scoreFlickerAnim = false;
+
+	int powerFreq = 8;
 
 	float timeDraw = 0.0f;
 	float time = 0.0f;
@@ -188,6 +205,7 @@ private:
 	Timer paddleCollision { 15.0f };
 	Timer timerStart { 2.1f };
 	Timer timerFlickerAnim { 0.25f };
+	Timer menuScreenWait { 0.5f };
 	Timer songOne { 180.0f };
 	Timer songTwo { 125.0f };
 	Timer songThree { 125.0f };

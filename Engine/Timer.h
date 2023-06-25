@@ -13,6 +13,7 @@ public:
 	void setState( bool in );
 
 	bool checkTime( ) const;
+
 	bool getState( ) const;
 	int getAmount( ) const;
 	float getTime( ) const;

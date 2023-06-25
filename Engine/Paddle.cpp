@@ -77,9 +77,16 @@ bool Paddle::ballCollision(Ball& ball)
 			{
 				//top
 				ballPos.y -= ball.getRect().bottom - rect.top;
-				const float relativeX = ballCurrPos.x - pos.x;
-				const float bounceAngle = relativeX * (3 * float(M_PI) / 2) / (pos.x) + float(M_PI) / 2;
-				ball.setDirection(Vec2(-cosf(bounceAngle), -sinf(bounceAngle)).Normalize() * G_BALL_SPEED);
+				float relativeX = 0.0f;
+				if ( incLength )
+					relativeX = ( ballCurrPos.x - pos.x ) / ( longHalfWidth );
+				else
+					relativeX = ( ballCurrPos.x - pos.x ) / ( halfWidth );
+
+				//45 degrees
+				float bounceAngle = relativeX * 0.7853982;
+
+				ball.setDirection(Vec2(sinf(bounceAngle), -cosf(bounceAngle)).Normalize() * G_BALL_SPEED);
 				test = true;
 			}
 		}
@@ -164,6 +171,6 @@ void Paddle::setPos(const Vec2& pos_)
 
 void Paddle::setSpeed( )
 {
-	speed = G_BALL_SPEED + 50.0f;
+	speed = G_BALL_SPEED + 55.0f;
 }
 

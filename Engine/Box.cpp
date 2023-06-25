@@ -30,6 +30,20 @@ Box::Box( const Rect& rec , const Color& border_c , const Color& fill_c , const 
 		strEmpty = false;
 }
 
+Box::Box( const Rect& rec , const Color& fill_c , const Color& txtCol , const std::string& str , int size )
+	:
+	rect( rec ),
+	fill( fill_c ),
+	textCol( txtCol ),
+	textSize( size ),
+	string( str )
+{
+	center = Vec2( rect.left + ( rec.right - rect.left ) / 2 , rect.top + ( rect.bottom - rect.top ) / 2 );
+	typeFill = true;
+	borderWidth = 0;
+	border = Color( NULL , NULL , NULL );
+}
+
 Box::Box( const Rect& rec , const Color& c )
 	:
 	rect( rec ),

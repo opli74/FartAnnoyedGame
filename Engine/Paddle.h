@@ -11,13 +11,18 @@ class Paddle
 public:
 	Paddle(const Vec2& pos, float halfWidth, float halfHeight);
 	void draw(Graphics& gfx);
+
 	bool ballCollision(Ball& ball);
 	void wallCollision(const Rect& wall);
+
 	void update(const Keyboard& kdb, float dt, float time);
+
 	void lengthPwrUp();
 	void lengthPwrUpReset( );
+
 	Rect getRect() const;
 	Vec2 getVec() const;
+
 	void setPos(const Vec2& pos);
 	void setSpeed( );
 
@@ -29,7 +34,7 @@ private:
 	float maxLength = 73.0f;
 	float diff;
 	float halfHeight;
-	float speed = G_BALL_SPEED + 50.0f;
+	float speed = G_BALL_SPEED + 55.0f;
 	bool test = false;
 	bool incLength = false;
 	int amount = 0;

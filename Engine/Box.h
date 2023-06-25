@@ -12,6 +12,7 @@ public:
 	Box( ) = default;
 	Box( const Rect& rec , const Color& border_c , const Color& fill_c ,int border , bool fill );
 	Box( const Rect& rec , const Color& border_c , const Color& fill_c , const Color& txtCol, const std::string& str, int size, int border);
+	Box( const Rect& rec , const Color& fill_c , const Color& txtCol , const std::string& str , int size );
 	Box( const Rect& rec ,  const Color& c ) ;
 
 	void draw( Graphics& gfx ) const;

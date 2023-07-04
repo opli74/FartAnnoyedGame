@@ -15,7 +15,8 @@ public:
 		bullet,
 		length,
 		balls,
-		block
+		block, 
+		bomb
 	};
 
 	class Bullet
@@ -46,6 +47,7 @@ public:
 	void draw(Graphics& gfx) const;
 	void drawBullets( Graphics& gfx );
 	void updateBullets( float dt , const Rect& wall );
+	bool bulletExists( );
 	Rect getBullets( );
 	void update(float dt);
 	bool paddleCollision(Paddle& paddle);

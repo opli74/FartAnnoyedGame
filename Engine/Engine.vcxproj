@@ -151,8 +151,10 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics.h" />
     <ClInclude Include="GetRandom.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="Includes.h" />
     <ClInclude Include="Keyboard.h" />
+    <ClInclude Include="GameLevel.h" />
     <ClInclude Include="MainWindow.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Paddle.h" />
@@ -177,6 +179,7 @@
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="Includes.cpp" />
     <ClCompile Include="Keyboard.cpp" />
+    <ClCompile Include="GameLevel.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
     <ClCompile Include="Mouse.cpp" />
@@ -257,6 +260,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Chili.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="levels.txt" />
+    <Text Include="menuBricks.txt" />
+    <Text Include="scoreBricks.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

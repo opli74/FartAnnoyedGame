@@ -28,6 +28,11 @@ PowerUp::PowerUp(Rect& rect, PowerUp::powers in)
 			col = Colors::Red;
 			break;
 		}
+		case powers::bomb:
+		{
+			col = Colors::White;
+			break;
+		}
 	}
 }
 
@@ -132,6 +137,14 @@ bool PowerUp::wallCollision(const Rect& wall)
 		return true;
 	}
 	return false;
+}
+
+bool PowerUp::bulletExists( )
+{
+	if ( bullets.empty( ) )
+		return false;
+	else
+		return true;
 }
 
 void PowerUp::turnOn(  )

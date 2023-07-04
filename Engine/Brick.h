@@ -14,7 +14,8 @@ public:
 	{
 		normal ,
 		extra ,
-		invinc
+		invinc , 
+		empty
 	};
 
 	Brick() = default;

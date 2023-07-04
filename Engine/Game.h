@@ -35,6 +35,8 @@
 #include "Text.h"
 #include "Timer.h"
 #include "Box.h"
+#include "GameState.h"
+#include "GameLevel.h"
 #include <random>
 #include <string>
 
@@ -48,49 +50,21 @@ public:
 private:
 	void ComposeFrame();
 	void UpdateModel(float dt);
-	void changeLevel();
-	void scoreScreenChange( );
-	void menuScreenChange( );
+
 	float getOffset( );
 	float getOffset( float minMin , float minMax , float maxMin , float maxMax );
 	std::string removeTail( std::string& str );
 	void drawTimeFormat( float time , Vec2 pos, int size);
 
-	template <size_t r, size_t c>
-	void checkCollision( const int( &bricks_in )[ r ][ c ] , int bricksNum , bool& collisionHappened , float& collisionDistSq, int& collisionIndex, float dt)
-	{
-		for ( int i = 0; i < scoreBricksCols * scoreBricksRows; i++ )
-		{
-			bricks[ i ].color( dt );
-			if ( bricks[ i ].isCollidingBall( balls[ 0 ] ) )
-			{
-				if ( bricks_in[ 0 ][ i ] != 0 )
-				{
-					const float newCollisionDistSq = ( balls[ 0 ].getPosition( ) - bricks[ i ].getRect( ).getCenter( ) ).GetLengthSq( );
-					if ( collisionHappened )
-					{
-						if ( newCollisionDistSq < collisionDistSq )
-						{
-							collisionDistSq = newCollisionDistSq;
-							collisionIndex = i;
-						}
-					}
-					else
-					{
-						collisionDistSq = newCollisionDistSq;
-						collisionIndex = i;
-						collisionHappened = true;
-					}
-				}
-			}
-		}
-	};
+	void checkCollision( Brick& brick, int i, bool& collisionHappened , float& collisionDistSq , int& collisionIndex , int& ballIndex, float dt );
+	void collisionHasHappened( std::vector< Brick >& bricks, int collisionIndex, int ballIndex , bool sound);
 
-	void collisionHasHappened( Brick* bricks, int collisionIndex, int ballIndex , bool sound);
 	void drawScore( );
 
 	Color lightenCol( const Color& in , float amount );
 	Color darkenCol( const Color& in , float amount );
+
+	void levelChange( const std::vector< std::vector<int> >& bricks, const std::tuple<int, int>& dimensions ) ;
 	/********************************/
 	/*  User Functions              */
 	/********************************/
@@ -99,6 +73,8 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables  */
+	GameState state = GameState::GAME_MENU;
+
 	static constexpr int screenHalfWidth = 400;
 	static constexpr int screenHalfHeight = 300;
 
@@ -110,6 +86,7 @@ private:
 	static constexpr int screenQuarterWidth = 200;
 	static constexpr int screen3QuarterWidth = 600;
 
+	int shotCount = 0;
 	int lives = 6;
 	std::string scoreText = "you win";
 
@@ -119,17 +96,21 @@ private:
 
 	//boxes for main menu
 	float boxW = 125.0f , boxH = 35.0f;
-	bool eHover = false , mHover = false , hHover = false;
+	bool eHover = false , mHover = false , hHover = false, cHover = false;
 
-	Rect easy = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 - 100 ) , boxW , boxH );
-	Rect medium = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 ) , boxW , boxH );
-	Rect hard = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 + 100 ) , boxW , boxH );
+	Rect easy = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 - 120 ) , boxW , boxH );
+	Rect medium = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 - 20) , boxW , boxH );
+	Rect hard = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 + 80 ) , boxW , boxH  );
+
+	Rect create = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 + 160 ) , boxW - 15 , boxH - 15 );
 
 	Color easyCol = Colors::LightGray , mediumCol = Colors::LightGray , hardCol = Colors::LightGray , menuBoxCol = Colors::MakeRGB( 20 , 20 , 20 );
 
 	Box boxEasy = Box( easy , Colors::White , menuBoxCol , Colors::White , "easy" , 4 , 2 );
 	Box boxMedium = Box( medium , Colors::White , menuBoxCol , Colors::White , "medium" , 4 , 2 );
 	Box boxHard = Box( hard , Colors::White , menuBoxCol , Colors::Red , "hard" , 4 , 2 );
+
+	Box boxCreate = Box( create , Colors::White , menuBoxCol , Colors::White , "create" , 3 , 2 );
 
 	bool soundMusicWait = false , soundMusicChange = false;
 
@@ -162,10 +143,9 @@ private:
 
 	bool returnHover = false;
 
-
 	Vec2 mouse;
 
-	bool start = false , spaceClicked = false , menuScreen = true , scoreScreen = false , f = false , brickAnim = true , scoreFlickerAnim = false;
+	bool start = false , spaceClicked = false , menuScreen = true , scoreScreen = false , f = false , brickAnim = true , scoreFlickerAnim = false, createScreen = false;
 
 	int powerFreq = 8;
 
@@ -178,7 +158,11 @@ private:
 	int nBrickRows;
 	int nBrickCols;
 	int nBricks;
-	Brick* bricks = nullptr;
+	std::vector < Brick > bricks;
+
+	static constexpr int nMaxBrickRows = 17;
+	static constexpr int nMaxBrickCols = 13;
+	std::vector< Brick > createBricks;
 
 	std::vector<PowerUp> powers;
 
@@ -218,7 +202,7 @@ private:
 	Brick* blockBricks = nullptr;
 
 	//to keep track of current level
-	int current2dIndex = 0;
+	int currentLevel = 1;
 
 	//score draw is used to animate score, score keeps the score duh...
 	int score = 0;
@@ -247,138 +231,7 @@ private:
 	bool hasBullet = false, hasBalls = false, paddleHasBall = false;
 	float relativeX = 0.0f;
 
+	GameLevel levels;
 
-	//score screen bricks and variables
-	static constexpr int scoreBricksCols = 12;
-	static constexpr int scoreBricksRows = 17;
-	static constexpr int nScoreBricks = scoreBricksRows * scoreBricksCols;
-	static constexpr int scoreBricks[ 1 ][ 250 ] =
-	{
-		{
-			0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0,
-			0, 0, 0, 0, 6, 6, 6, 6, 6, 6, 6, 6, 6, 0, 0, 0, 0,
-		}
-	};
-
-
-	//menu bricks map and varibales
-	static constexpr int menuBricksCols = 12;
-	static constexpr int menuBricksRows = 17;
-	static constexpr int nMenuBricks = menuBricksCols * menuBricksRows;
-	static constexpr int mainMenuBricks[ 1 ][ 250 ] =
-	{
-		{
-			6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6,
-			6, 1, 2, 3, 6, 0, 0, 0, 0, 0, 0, 0, 6, 1, 2, 3, 6,
-			6, 2, 3, 4, 6, 0, 0, 0, 0, 0, 0, 0, 6, 2, 3, 4, 6,
-			6, 3, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0, 6, 3, 4, 5, 6,
-			6, 4, 5, 1, 6, 0, 0, 0, 0, 0, 0, 0, 6, 4, 5, 1, 6,
-			6, 5, 1, 2, 6, 0, 0, 0, 0, 0, 0, 0, 6, 5, 1, 2, 6,
-			6, 1, 2, 3, 6, 0, 0, 0, 0, 0, 0, 0, 6, 1, 2, 3, 6,
-			6, 2, 3, 4, 6, 0, 0, 0, 0, 0, 0, 0, 6, 2, 3, 4, 6,
-			6, 3, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0, 6, 3, 4, 5, 6,
-			6, 4, 5, 1, 6, 0, 0, 0, 0, 0, 0, 0, 6, 4, 5, 1, 6,
-			6, 5, 1, 2, 6, 0, 0, 0, 0, 0, 0, 0, 6, 5, 1, 2, 6,
-			6, 6, 6, 6, 6, 0, 0, 0, 0, 0, 0, 0, 6, 6, 6, 6, 6,
-		}
-	};
-
-
-	//the brick maps for the bricks displayed in each level, the first array is two numbers that define the amount of rows and column.
-	static constexpr int brickArray[ 4 ][ 2 ][ 200 ] = {
-
-		{
-			{11, 6},
-
-			{
-			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-			2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-			4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			}
-
-		},
-
-		{
-
-						{11, 17},
-
-			{
-			0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0,
-			0, 0, 2, 0, 0, 0, 0, 0, 2, 0, 0,
-			0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0,
-			0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0,
-			0, 0, 7, 7, 7, 7, 7, 7, 7, 0, 0,
-			0, 0, 7, 7, 7, 7, 7, 7, 7, 0, 0,
-			0, 7, 7, 1, 7, 7, 7, 1, 7, 7, 0,
-			0, 7, 7, 1, 7, 7, 7, 1, 7, 7, 0,
-			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-			7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-			7, 0, 7, 7, 7, 7, 7, 7, 7, 0, 7,
-			7, 0, 7, 0, 0, 0, 0, 0, 7, 0, 7,
-			7, 0, 7, 0, 0, 0, 0, 0, 7, 0, 7,
-			7, 0, 7, 0, 0, 0, 0, 0, 7, 0, 7,
-			0, 0, 0, 7, 7, 0, 7, 7, 0, 0, 0,
-			0, 0, 0, 7, 7, 0, 7, 7, 0, 0, 0,
-			}
-
-
-
-		},
-
-		{
-			{11, 15},
-
-			{
-			0, 0, 6, 0, 0, 6, 0, 0, 6, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 0, 7, 0, 0, 0, 0, 0, 7, 0, 0,
-			0, 1, 2, 7, 0, 0, 0, 7, 3, 4, 0,
-			7, 2, 3, 4, 5, 0, 2, 3, 4, 5, 7,
-			7, 3, 4, 5, 1, 2, 3, 4, 5, 1, 7,
-			0, 4, 5, 1, 2, 3, 4, 5, 1, 2, 0,
-			0, 0, 1, 2, 3, 6, 5, 1, 2, 0, 0,
-			0, 0, 2, 3, 4, 5, 1, 2, 3, 0, 0,
-			1, 0, 0, 4, 5, 1, 2, 3, 0, 0, 1,
-			0, 0, 0, 5, 1, 2, 3, 4, 0, 0, 0,
-			0, 0, 0, 0, 2, 3, 4, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0, 1, 0, 0, 0, 6, 0, 0, 0, 1, 0,
-			}
-
-		},
-
-		{
-			{ 13 , 11 },
-
-			{
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			2, 2, 2, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 4, 4, 4,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			1, 1, 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-			}
-		}
-	};
 	/********************************/
 };

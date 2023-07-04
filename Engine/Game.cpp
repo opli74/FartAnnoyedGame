@@ -56,33 +56,7 @@ Game::Game( MainWindow& wnd )
 	blockBricksY = wall.getWall( ).bottom - brickHeight;
 	blockBricks = new Brick[ 13 ];
 
-	bricks = new Brick[ menuBricksCols * menuBricksRows ];
-
-	int i = 0;
-	for ( int y = 0; y < menuBricksCols; y++ )
-	{
-		for ( int x = 0; x < menuBricksRows; x++ )
-		{
-			if ( mainMenuBricks[ 0 ][ i ] > 0 && mainMenuBricks[ 0 ][ i ] < 6 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , brickColors[ ( mainMenuBricks[ 0 ][ i ] ) - 1 ] , 1 , Brick::Type::normal ) );
-			}
-			else if ( mainMenuBricks[ 0 ][ i ] == 6 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc ) );
-			}
-			else if ( mainMenuBricks[ 0 ][ i ] == 7 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Gray , 2 , Brick::Type::extra ) );
-			}
-			else
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Black , 0 , Brick::Type::normal ) );
-			}
-			i++;
-		}
-	}
-
+	levelChange( levels.loadTiles( GameLevel::Type::Menu , 1 ) , levels.getDimensions( GameLevel::Type::Menu , 1 ) );
 }
 
 void Game::Go()
@@ -109,515 +83,605 @@ void Game::UpdateModel( float dt )
 	mouse = Vec2( wnd.mouse.GetPosX( ) , wnd.mouse.GetPosY( ) );
 
 	//----------------------------MenuScreen-------------------------//
-	if ( menuScreen )
+	switch ( state )
 	{
-		if ( play )
-		{
-			soundMusic = Sound( L"Sounds\\musicTitle.wav" , 0.0f, 34.0f);
-			soundMusic.StopAll( );
-			soundMusic.Play( 1.0f , musicVol );
-			play = false;
-		}
-
-		balls[ 0 ].anim( dt );
-		paddle.setPos( Vec2( paddle.getVec( ).x + ( balls[ 0 ].getPosition( ).x - paddle.getVec( ).x ) / 600 * ( balls[ 0 ].getPosition( ).y / 400 ) , PADDLE_Y ) );
-		paddle.wallCollision( menuWall.getWall(  ) );
-
-		balls[ 0 ].update( dt );
-		balls[ 0 ].wallCollision( menuWall.getWall( ) , false );
-
-		if( paddle.ballCollision( balls[ 0 ] ) )
-		{
-			balls[ 0 ].setDirection( Vec2( getOffset( -150.0f , -G_BALL_SPEED , 150.0f , G_BALL_SPEED ) , -Random::getRand( 150.0f, G_BALL_SPEED ) ) );
-		}
-
-		checkCollision( mainMenuBricks , menuBricksCols * menuBricksRows , collisionHappened , collisionDisSq , collisionIndex , dt );
-
-		if ( collisionHappened )
-		{
-			collisionHasHappened( bricks , collisionIndex , ballIndex , false);
-		}
-
-		if (!menuScreenWait.checkTime( ))
-			menuScreenWait.update( dt );
-
-		if ( boxEasy.isHover( mouse ) )
-		{
-			if ( wnd.mouse.LeftIsPressed( ) && menuScreenWait.checkTime( ) )
-			{
-				soundChange = Sound( L"Sounds\\screenChange.wav" );
-				soundChange.StopAll( );
-				soundChange.Play( 1.0f , soundEffectVol );
-
-				soundMusic.StopAll( );
-
-				play = true;
-
-				powerFreq = 5;
-				G_BALL_SPEED = 375.0f;
-				balls[ 0 ].update( dt );
-				paddle.setSpeed( );
-				menuScreen = false;
-				changeLevel( );
-			}
-
-			if ( !eHover )
-			{
-				boxEasy.setFill( Colors::White );
-				boxEasy.setBorder( Colors::Red );
-				boxEasy.setTextCol( Colors::Black );
-				boxEasy.setTextSize( 5 );
-
-				soundPlay = Sound( L"Sounds\\button.wav" );
-				soundPlay.StopAll( );
-				soundPlay.Play( 1.0f , soundEffectVol );
-			}
-			eHover = true;
-		}
-		else
-		{
-			eHover = false;
-			boxEasy.setFill( menuBoxCol );
-			boxEasy.setBorder( Colors::White );
-			boxEasy.setTextCol( Colors::White );
-			boxEasy.setTextSize( 4 );
-		}
-
-		if ( boxMedium.isHover( mouse ) )
-		{
-			if ( wnd.mouse.LeftIsPressed( ) && menuScreenWait.checkTime( ) )
-			{
-				soundChange = Sound( L"Sounds\\screenChange.wav" );
-				soundChange.StopAll( );
-				soundChange.Play( 1.0f , soundEffectVol );
-
-				soundMusic.StopAll( );
-
-				play = true;
-
-				powerFreq = 6;
-				G_BALL_SPEED = 465.0f;
-				paddle.setSpeed( );
-				menuScreen = false;
-				changeLevel( );
-			}
-			
-			if ( !mHover )
-			{
-				boxMedium.setFill( Colors::White );
-				boxMedium.setBorder( Colors::Red );
-				boxMedium.setTextCol( Colors::Black );
-				boxMedium.setTextSize( 5 );
-
-				soundPlay = Sound( L"Sounds\\button.wav" );
-				soundPlay.StopAll( );
-				soundPlay.Play( 1.0f , soundEffectVol );
-			}
-			mHover = true;
-		}
-		else
-		{
-			mHover = false;
-			boxMedium.setFill( menuBoxCol );
-			boxMedium.setBorder( Colors::White );
-			boxMedium.setTextCol( Colors::White );
-			boxMedium.setTextSize( 4 );
-		}
-
-		if ( boxHard.isHover( mouse ) )
-		{
-			if ( wnd.mouse.LeftIsPressed( ) && menuScreenWait.checkTime( ) )
-			{
-				soundChange = Sound( L"Sounds\\screenChange.wav" );
-				soundChange.StopAll( );
-				soundChange.Play( 1.0f , soundEffectVol );
-
-				soundMusic.StopAll( );
-
-				play = true;
-
-				powerFreq = 8;
-				menuScreen = false;
-				G_BALL_SPEED = 555.0f;
-				paddle.setSpeed( );
-				changeLevel( );
-			}
-
-			if ( !hHover )
-			{
-				soundPlay = Sound( L"Sounds\\button.wav" );
-				soundPlay.StopAll( );
-				soundPlay.Play( 1.0f , soundEffectVol );
-				boxHard.setFill( Colors::White );
-				boxHard.setBorder( Colors::Red );
-				boxHard.setTextCol( Colors::Black );
-				boxHard.setTextSize( 5 );
-			}
-			hHover = true;
-		}
-		else
-		{
-			hHover = false;
-			boxHard.setFill( menuBoxCol );
-			boxHard.setBorder( Colors::White );
-			boxHard.setTextCol( Colors::Red );
-			boxHard.setTextSize( 4 );
-		}
-
-		if ( wnd.mouse.LeftIsPressed( ) ) 
-		{
-			if ( !boxMusicHoverActive )
-			{
-				if ( boxMusicHover )
-					boxMusicHoverActive = true;
-				else
-					boxMusicHoverActive = false;
-			}
-			else if ( boxMusicHoverActive )
-			{
-				musicVol = ( mouse.x - ( screen3QuarterWidth - soundBoxW )  ) / ( soundBoxW * 2 );
-
-				if ( musicVol < 0.0f )
-					musicVol = 0.0f;
-				else if ( musicVol > 1.0f )
-					musicVol = 1.0f;
-
-				musicVolAmount = musicVol * ( soundBoxW * 2 );
-				boxMusicVol.setRect( Rect( Vec2( screen3QuarterWidth - soundBoxW , 570.0f - soundBoxH ) , musicVolAmount , soundVolBoxH ) );
-
-				soundMusicChange = true;
-			}
-			if ( !boxSfxHoverActive )
-			{
-				if ( boxSfxHover )
-					boxSfxHoverActive = true;
-				else
-					boxSfxHoverActive = false;
-			}
-			else if ( boxSfxHoverActive )
-			{
-				soundEffectVol = ( mouse.x - ( screenQuarterWidth - soundBoxW )  ) / ( soundBoxW * 2 );
-
-				if ( soundEffectVol < 0.0f )
-					soundEffectVol = 0.0f;
-				else if ( soundEffectVol > 1.0f )
-					soundEffectVol = 1.0f;
-
-				sfxVolAmount = soundEffectVol * ( soundBoxW * 2 );
-				boxSfxVol.setRect( Rect( Vec2( screenQuarterWidth - soundBoxW , 570.0f - soundBoxH ) , sfxVolAmount , soundVolBoxH ) );
-			}
-		}
-		else
-		{
-			if ( soundMusicChange )
-			{
-				soundMusic.StopAll( );
-				soundMusic.Play( 1.0f , musicVol );
-				soundMusicChange = false;
-			}
-			boxMusicHoverActive = false;
-			boxSfxHoverActive = false;
-
-			boxSfx.setFill( soundBoxCol );
-			boxSfxVol.setFill( soundVolCol );
-
-			boxMusic.setFill( soundBoxCol );
-			boxMusicVol.setFill( soundVolCol );
-		}
-
-		if ( boxSfx.isHover( mouse ) )
-		{
-			boxSfxHover = true;
-
-			boxSfx.setFill( lightenCol( soundBoxCol , 0.2f ) );
-			boxSfxVol.setFill( lightenCol( soundVolCol , 1.0f ) );
-		}
-		else
-		{
-			boxSfxHover = false;
-		}
-		if ( boxMusic.isHover( mouse ) )
-		{
-			boxMusicHover = true;
-
-			boxMusic.setFill( lightenCol( soundBoxCol , 0.2f ) );
-			boxMusicVol.setFill( lightenCol( soundVolCol , 1.0f ) );
-		}
-		else
-		{
-			boxMusicHover = false;
-		}
-	}
-	//----------------------------ScoreScreen------------------------------//
-	else if ( scoreScreen )
-	{
-		if ( play )
-		{
-			soundMusic.StopAll( );
-			timerStart.update( dt );
-			if ( timerStart.checkTime( ) )
-			{
-				soundMusic = Sound( L"Sounds\\musicTitle.wav" , 0.0f , 34.0f );
-				soundMusic.StopAll( );
-				soundMusic.Play( 1.0f , musicVol );
-				play = false;
-				scoreDraw = score;
-				scoreFlickerAnim = true;
-				timerStart.reset( );
-				timerStart.setState( false );
-			}
-			else
-			{
-				scoreDraw = int(( timerStart.getTime( ) / timerStart.getMaxTime( ) ) * score);
-				timeDraw = ( timerStart.getTime( ) / timerStart.getMaxTime( ) ) * time;
-			}
-		}
-
-		if ( returnBoxScore.isHover( mouse ) )
-		{
-			if ( wnd.mouse.LeftIsPressed( ) )
-			{
-				menuScreenChange( );
-				menuScreen = true;
-				scoreScreen = false;
-			}
-
-			if ( !returnHover )
-			{
-				soundPlay = Sound( L"Sounds\\button.wav" );
-				soundPlay.StopAll( );
-				soundPlay.Play( 1.0f , soundEffectVol );
-				returnBoxScore.setFill( Colors::White );
-				returnBoxScore.setBorder( Colors::Red );
-				returnBoxScore.setTextCol( Colors::Black );
-			}
-			returnHover = true;
-		}
-		else
-		{
-			returnHover = false;
-			returnBoxScore.setFill( menuBoxCol );
-			returnBoxScore.setBorder( Colors::White );
-			returnBoxScore.setTextCol( Colors::White );
-		}
-
-		if ( scoreFlickerAnim )
-		{
-			timerFlickerAnim.update( dt );
-			if ( timerFlickerAnim.checkTime( ) )
-			{
-				timerFlickerAnim.reset( );
-				timerFlickerAnim.setState( !timerFlickerAnim.getState( ) );
-			}
-		}
-
-		balls[ 0 ].anim( dt );
-		paddle.setPos( Vec2( paddle.getVec().x + (balls[ 0 ].getPosition( ).x  - paddle.getVec( ).x) / 600 * (balls[ 0 ].getPosition( ).y / 300) , PADDLE_Y ) );
-		paddle.wallCollision( menuWall.getWall( ) );
-
-		balls[ 0 ].update( dt );
-		balls[ 0 ].wallCollision( menuWall.getWall( ) , false );
-
-		if ( paddle.ballCollision( balls[ 0 ] ) )
-		{
-			balls[ 0 ].setDirection( Vec2( getOffset( -150.0f , -G_BALL_SPEED , 150.0f , G_BALL_SPEED ) , -Random::getRand( 150.0f , G_BALL_SPEED ) ) );
-		}
-
-		checkCollision( scoreBricks , scoreBricksCols* scoreBricksRows , collisionHappened , collisionDisSq , collisionIndex , dt );
-
-		if ( collisionHappened )
-		{
-			collisionHasHappened( bricks , collisionIndex , ballIndex , false );
-		}
-
-
-	}
-	//-----------------------------GameScreen--------------------------------//
-	else 
-	{
-
-		if ( wnd.kbd.KeyIsPressed( '1' ) )
-		{
-			if ( !pressed )
-			{
-				if ( current2dIndex > 0 )
-					current2dIndex -= 1;
-
-				changeLevel( );
-
-				pressed = true;
-			}
-		}
-		else if ( wnd.kbd.KeyIsPressed( '2' ) || destroyed == ( nBricks - nonBrickAmount ) - indestructable )
-		{
-			if ( !pressed )
-			{
-				if ( current2dIndex < ( sizeof( brickArray ) / sizeof( brickArray[ 0 ] ) ) - 1 )
-				{
-					score += 250;
-					current2dIndex += 1;
-					changeLevel( );
-
-					if ( blockBricksCurr > 3 )
-					{
-						blockBricksCurr = 3;
-					}
-				}
-				else
-				{
-					scoreText = "you win";
-					scoreScreenChange( );
-					scoreScreen = true;
-				}
-					
-				pressed = true;
-			}
-		}
-		else if ( lives == 0 )
-		{
-			scoreText = "you lose";
-			scoreScreenChange( );
-			menuScreen = false;
-			scoreScreen = true;
-		}
-		else
-		{
-			pressed = false;
-		}
-
-		for ( int i = 0; i < currBalls; i++ )
-		{
-			balls[ i ].anim( dt );
-		}
-
-		if ( returnBoxGame.isHover( mouse ) )
-		{
-			if ( wnd.mouse.LeftIsPressed( ) )
-			{
-				menuScreenChange( );
-				menuScreen = true;
-				scoreScreen = false;
-			}
-
-			if ( !returnHover )
-			{
-				soundPlay = Sound( L"Sounds\\button.wav" );
-				soundPlay.StopAll( );
-				soundPlay.Play( 1.0f , soundEffectVol );
-				returnBoxGame.setFill( Colors::White );
-				returnBoxGame.setBorder( Colors::Red );
-				returnBoxGame.setTextCol( Colors::Black );
-			}
-			returnHover = true;
-		}
-		else
-		{
-			returnHover = false;
-			returnBoxGame.setFill( menuBoxCol );
-			returnBoxGame.setBorder( Colors::White );
-			returnBoxGame.setTextCol( Colors::White );;
-		}
-
-		if ( brickAnim )
-		{
-			for ( int i = 0; i < nBricks; i++ )
-			{
-				if ( bricks[ i ].getType( ) == Brick::Type::extra ||
-					   bricks[ i ].getType( ) == Brick::Type::invinc )
-				{
-					bricks[ i ].hit = true;
-				}
-			}
-			for ( int i = 0; i < blockBricksCurr; i++ )
-			{
-				if ( blockBricks[ i ].getType( ) == Brick::Type::extra ||
-					 blockBricks[ i ].getType( ) == Brick::Type::invinc )
-				{
-					blockBricks[ i ].hit = true;
-				}
-			}
-			brickAnim = false;
-		}
-
-		if ( timerStart.getState( ) )
+		case GameState::GAME_MENU:
 		{
 
 			if ( play )
 			{
-				soundMusic = Sound( L"Sounds\\music.wav" , 0.0f, 169.0f);
+				soundMusic = Sound( L"Sounds\\musicTitle.wav" , 0.0f , 34.0f );
 				soundMusic.StopAll( );
 				soundMusic.Play( 1.0f , musicVol );
+				soundChange.StopAll( );
 				play = false;
 			}
 
-			paddle.update( wnd.kbd , dt , time );
-			paddle.wallCollision( wall.getWall( ) );
+			balls[ 0 ].anim( dt );
+			paddle.setPos( Vec2( paddle.getVec( ).x + ( balls[ 0 ].getPosition( ).x - paddle.getVec( ).x ) / 600 * ( balls[ 0 ].getPosition( ).y / 400 ) , PADDLE_Y ) );
+			paddle.wallCollision( menuWall.getWall( ) );
 
-			if ( !spaceClicked )
+			balls[ 0 ].update( dt );
+			balls[ 0 ].wallCollision( menuWall.getWall( ) , false );
+
+			if ( paddle.ballCollision( balls[ 0 ] ) )
 			{
-				for ( int i = 0; i < currBalls; i++ )
+				balls[ 0 ].setDirection( Vec2( getOffset( -150.0f , -G_BALL_SPEED , 150.0f , G_BALL_SPEED ) , -Random::getRand( 150.0f , G_BALL_SPEED ) ) );
+			}
+
+			int i = 0;
+			for ( auto& e : bricks )
+			{
+				checkCollision( e , i , collisionHappened , collisionDisSq , collisionIndex , ballIndex , dt );
+				i++;
+			}
+
+			if ( collisionHappened )
+			{
+				collisionHasHappened( bricks , collisionIndex , ballIndex , false );
+			}
+
+			if ( !menuScreenWait.checkTime( ) )
+				menuScreenWait.update( dt );
+
+			if ( boxEasy.isHover( mouse ) )
+			{
+				if ( wnd.mouse.LeftIsPressed( ) && menuScreenWait.checkTime( ) )
 				{
-					balls[ i ].setPosition( Vec2( paddle.getVec( ).x + offset , PADDLE_Y - 12.0f ) );
+					soundChange = Sound( L"Sounds\\screenChange.wav" );
+					soundChange.StopAll( );
+					soundChange.Play( 1.0f , soundEffectVol );
+
+					soundMusic.StopAll( );
+
+					play = true;
+
+					powerFreq = 5;
+					G_BALL_SPEED = 375.0f;
+					balls[ 0 ].update( dt );
+					paddle.setSpeed( );
+					state = GameState::GAME_ACTIVE;
+					levelChange( levels.loadTiles( GameLevel::Type::Game , currentLevel ) , levels.getDimensions( GameLevel::Type::Game , currentLevel ) );
+				}
+
+				if ( !eHover )
+				{
+					boxEasy.setFill( Colors::White );
+					boxEasy.setBorder( Colors::Red );
+					boxEasy.setTextCol( Colors::Black );
+					boxEasy.setTextSize( 5 );
+
+					soundPlay = Sound( L"Sounds\\button.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , soundEffectVol );
+				}
+				eHover = true;
+			}
+			else
+			{
+				eHover = false;
+				boxEasy.setFill( menuBoxCol );
+				boxEasy.setBorder( Colors::White );
+				boxEasy.setTextCol( Colors::White );
+				boxEasy.setTextSize( 4 );
+			}
+
+			if ( boxMedium.isHover( mouse ) )
+			{
+				if ( wnd.mouse.LeftIsPressed( ) && menuScreenWait.checkTime( ) )
+				{
+					soundChange = Sound( L"Sounds\\screenChange.wav" );
+					soundChange.StopAll( );
+					soundChange.Play( 1.0f , soundEffectVol );
+
+					soundMusic.StopAll( );
+
+					play = true;
+
+					powerFreq = 6;
+					G_BALL_SPEED = 465.0f;
+					paddle.setSpeed( );
+					state = GameState::GAME_ACTIVE;
+					levelChange( levels.loadTiles( GameLevel::Type::Game , currentLevel ) , levels.getDimensions( GameLevel::Type::Game , currentLevel ) );
+				}
+
+				if ( !mHover )
+				{
+					boxMedium.setFill( Colors::White );
+					boxMedium.setBorder( Colors::Red );
+					boxMedium.setTextCol( Colors::Black );
+					boxMedium.setTextSize( 5 );
+
+					soundPlay = Sound( L"Sounds\\button.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , soundEffectVol );
+				}
+				mHover = true;
+			}
+			else
+			{
+				mHover = false;
+				boxMedium.setFill( menuBoxCol );
+				boxMedium.setBorder( Colors::White );
+				boxMedium.setTextCol( Colors::White );
+				boxMedium.setTextSize( 4 );
+			}
+
+			if ( boxHard.isHover( mouse ) )
+			{
+				if ( wnd.mouse.LeftIsPressed( ) && menuScreenWait.checkTime( ) )
+				{
+					soundChange = Sound( L"Sounds\\screenChange.wav" );
+					soundChange.StopAll( );
+					soundChange.Play( 1.0f , soundEffectVol );
+
+					soundMusic.StopAll( );
+
+					play = true;
+
+					powerFreq = 8;
+					G_BALL_SPEED = 555.0f;
+					paddle.setSpeed( );
+					state = GameState::GAME_ACTIVE;
+					levelChange( levels.loadTiles( GameLevel::Type::Game , currentLevel ) , levels.getDimensions( GameLevel::Type::Game , currentLevel ) );
+				}
+
+				if ( !hHover )
+				{
+					soundPlay = Sound( L"Sounds\\button.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , soundEffectVol );
+					boxHard.setFill( Colors::White );
+					boxHard.setBorder( Colors::Red );
+					boxHard.setTextCol( Colors::Black );
+					boxHard.setTextSize( 5 );
+				}
+				hHover = true;
+			}
+			else
+			{
+				hHover = false;
+				boxHard.setFill( menuBoxCol );
+				boxHard.setBorder( Colors::White );
+				boxHard.setTextCol( Colors::Red );
+				boxHard.setTextSize( 4 );
+			}
+
+			if ( boxCreate.isHover( mouse ) )
+			{
+				if ( wnd.mouse.LeftIsPressed( ) && menuScreenWait.checkTime( ) )
+				{
+					soundChange = Sound( L"Sounds\\screenChange.wav" );
+					soundChange.StopAll( );
+					soundChange.Play( 1.0f , soundEffectVol );
+
+					soundMusic.StopAll( );
+
+					state = GameState::GAME_CREATE;
+
+				}
+
+				if ( !cHover )
+				{
+					boxCreate.setFill( Colors::White );
+					boxCreate.setBorder( Colors::Red );
+					boxCreate.setTextCol( Colors::Black );
+					boxCreate.setTextSize( 3 );
+					soundPlay = Sound( L"Sounds\\button.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , soundEffectVol );
+				}
+				cHover = true;
+			}
+			else
+			{
+				cHover = false;
+				boxCreate.setFill( menuBoxCol );
+				boxCreate.setBorder( Colors::White );
+				boxCreate.setTextCol( Colors::White );
+				boxCreate.setTextSize( 3 );
+			}
+
+			if ( wnd.mouse.LeftIsPressed( ) )
+			{
+				if ( !boxMusicHoverActive )
+				{
+					if ( boxMusicHover )
+						boxMusicHoverActive = true;
+					else
+						boxMusicHoverActive = false;
+				}
+				else if ( boxMusicHoverActive )
+				{
+					musicVol = ( mouse.x - ( screen3QuarterWidth - soundBoxW ) ) / ( soundBoxW * 2 );
+
+					if ( musicVol < 0.0f )
+						musicVol = 0.0f;
+					else if ( musicVol > 1.0f )
+						musicVol = 1.0f;
+
+					musicVolAmount = musicVol * ( soundBoxW * 2 );
+					boxMusicVol.setRect( Rect( Vec2( screen3QuarterWidth - soundBoxW , 570.0f - soundBoxH ) , musicVolAmount , soundVolBoxH ) );
+
+					soundMusicChange = true;
+				}
+				if ( !boxSfxHoverActive )
+				{
+					if ( boxSfxHover )
+						boxSfxHoverActive = true;
+					else
+						boxSfxHoverActive = false;
+				}
+				else if ( boxSfxHoverActive )
+				{
+					soundEffectVol = ( mouse.x - ( screenQuarterWidth - soundBoxW ) ) / ( soundBoxW * 2 );
+
+					if ( soundEffectVol < 0.0f )
+						soundEffectVol = 0.0f;
+					else if ( soundEffectVol > 1.0f )
+						soundEffectVol = 1.0f;
+
+					sfxVolAmount = soundEffectVol * ( soundBoxW * 2 );
+					boxSfxVol.setRect( Rect( Vec2( screenQuarterWidth - soundBoxW , 570.0f - soundBoxH ) , sfxVolAmount , soundVolBoxH ) );
+				}
+			}
+			else
+			{
+				if ( soundMusicChange )
+				{
+					soundMusic.StopAll( );
+					soundMusic.Play( 1.0f , musicVol );
+					soundMusicChange = false;
+				}
+				boxMusicHoverActive = false;
+				boxSfxHoverActive = false;
+
+				boxSfx.setFill( soundBoxCol );
+				boxSfxVol.setFill( soundVolCol );
+
+				boxMusic.setFill( soundBoxCol );
+				boxMusicVol.setFill( soundVolCol );
+			}
+
+			if ( boxSfx.isHover( mouse ) )
+			{
+				boxSfxHover = true;
+
+				boxSfx.setFill( lightenCol( soundBoxCol , 0.2f ) );
+				boxSfxVol.setFill( lightenCol( soundVolCol , 1.0f ) );
+			}
+			else
+			{
+				boxSfxHover = false;
+			}
+			if ( boxMusic.isHover( mouse ) )
+			{
+				boxMusicHover = true;
+
+				boxMusic.setFill( lightenCol( soundBoxCol , 0.2f ) );
+				boxMusicVol.setFill( lightenCol( soundVolCol , 1.0f ) );
+			}
+			else
+			{
+				boxMusicHover = false;
+			}
+			break;
+		}
+		case GameState::GAME_SCORE:
+		{
+			if ( play )
+			{
+				soundMusic.StopAll( );
+				timerStart.update( dt );
+				G_BALL_SPEED = 550.0f;
+				if ( timerStart.checkTime( ) )
+				{
+					soundMusic = Sound( L"Sounds\\musicTitle.wav" , 0.0f , 34.0f );
+					soundMusic.StopAll( );
+					soundMusic.Play( 1.0f , musicVol );
+					play = false;
+					scoreDraw = score;
+					scoreFlickerAnim = true;
+					timerStart.reset( );
+					timerStart.setState( false );
+				}
+				else
+				{
+					scoreDraw = int( ( timerStart.getTime( ) / timerStart.getMaxTime( ) ) * score );
+					timeDraw = ( timerStart.getTime( ) / timerStart.getMaxTime( ) ) * time;
 				}
 			}
 
-			if ( wnd.kbd.KeyIsPressed( VK_UP ) && !spaceClicked )
+			if ( returnBoxScore.isHover( mouse ) )
 			{
-				spaceClicked = true;
-				paddleHasBall = false;
-				soundPlay = Sound( L"Sounds\\arkpad.wav" );
-				soundPlay.StopAll( );
-				soundPlay.Play( 1.0f , soundEffectVol );
+				if ( wnd.mouse.LeftIsPressed( ) )
+				{
+					levelChange( levels.loadTiles( GameLevel::Type::Menu , currentLevel ) , levels.getDimensions( GameLevel::Type::Menu , currentLevel ) );
+					state = GameState::GAME_MENU;
+					soundChange.StopAll( );
+					menuScreenWait.reset( );
+					play = true;
+				}
+
+				if ( !returnHover )
+				{
+					soundPlay = Sound( L"Sounds\\button.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , soundEffectVol );
+					returnBoxScore.setFill( Colors::White );
+					returnBoxScore.setBorder( Colors::Red );
+					returnBoxScore.setTextCol( Colors::Black );
+				}
+				returnHover = true;
+			}
+			else
+			{
+				returnHover = false;
+				returnBoxScore.setFill( menuBoxCol );
+				returnBoxScore.setBorder( Colors::White );
+				returnBoxScore.setTextCol( Colors::White );
 			}
 
-			if ( spaceClicked  )
+			if ( scoreFlickerAnim )
 			{
-				for ( int i = 0; i < currBalls; i++ )
+				timerFlickerAnim.update( dt );
+				if ( timerFlickerAnim.checkTime( ) )
 				{
-					balls[ i ].update( dt );
-					if ( currBalls > 1 )
+					timerFlickerAnim.reset( );
+					timerFlickerAnim.setState( !timerFlickerAnim.getState( ) );
+				}
+			}
+
+			balls[ 0 ].anim( dt );
+			paddle.setPos( Vec2( paddle.getVec( ).x + ( balls[ 0 ].getPosition( ).x - paddle.getVec( ).x ) / 600 * ( balls[ 0 ].getPosition( ).y / 300 ) , PADDLE_Y ) );
+			paddle.wallCollision( menuWall.getWall( ) );
+
+			balls[ 0 ].update( dt );
+			balls[ 0 ].wallCollision( menuWall.getWall( ) , false );
+
+			if ( paddle.ballCollision( balls[ 0 ] ) )
+			{
+				balls[ 0 ].setDirection( Vec2( getOffset( -150.0f , -G_BALL_SPEED , 150.0f , G_BALL_SPEED ) , -Random::getRand( 150.0f , G_BALL_SPEED ) ) );
+			}
+
+			int i = 0;
+			for ( auto& e : bricks )
+			{
+				checkCollision( e , i , collisionHappened , collisionDisSq , collisionIndex , ballIndex , dt );
+				i++;
+			}
+
+			if ( collisionHappened )
+			{
+				collisionHasHappened( bricks , collisionIndex , ballIndex , false );
+			}
+			break;
+		}
+		case GameState::GAME_ACTIVE:
+		{
+
+			if ( wnd.kbd.KeyIsPressed( '1' ) )
+			{
+				if ( !pressed )
+				{
+					if ( currentLevel > 1 )
+						currentLevel -= 1;
+
+					levelChange( levels.loadTiles( GameLevel::Type::Game , currentLevel ) , levels.getDimensions( GameLevel::Type::Game , currentLevel ) );
+
+					pressed = true;
+				}
+			}
+			else if ( wnd.kbd.KeyIsPressed( '2' ) || destroyed == ( nBricks - nonBrickAmount ) - indestructable )
+			{
+				if ( !pressed )
+				{
+					if ( currentLevel < 4 )
 					{
-						if ( balls[ i ].wallCollision( wall.getWall( ) , false ) )
+						score += 250;
+						currentLevel += 1;
+						levelChange( levels.loadTiles( GameLevel::Type::Game , currentLevel ) , levels.getDimensions( GameLevel::Type::Game , currentLevel ) );
+
+						soundChange = Sound( L"Sounds\\screenChange.wav" );
+						soundChange.StopAll( );
+						soundChange.Play( 1.0f , soundEffectVol );
+
+						if ( blockBricksCurr > 3 )
 						{
-							balls.erase( balls.begin( ) + i );
-							currBalls--;
+							blockBricksCurr = 3;
 						}
 					}
 					else
 					{
-						balls[ i ].wallCollision( wall.getWall( ) , true );
-						hasBalls = false;
+						scoreText = "you win";
+						currentLevel = 1;
+						levelChange( levels.loadTiles( GameLevel::Type::Score , currentLevel ) , levels.getDimensions( GameLevel::Type::Score , currentLevel ) );
+						state = GameState::GAME_SCORE;
 					}
+
+					pressed = true;
 				}
 			}
-
-			if ( balls[ 0 ].getRestart( ) )
+			else if ( lives == 0 )
 			{
-				offset = getOffset( );
-				balls[ 0 ].switchRestart( );
-				balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 12.0f ) );
-				balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
-				paddle.setPos( Vec2( 400.0f , PADDLE_Y ) );
-				timerStart.setState( false );
-				spaceClicked = false;
-				lives--;
-				soundPlay = Sound( L"Sounds\\arkrestart.wav" );
-				soundPlay.StopAll( );
-				soundPlay.Play( 1.0f , soundEffectVol );
+				scoreText = "you lose";
+				levelChange( levels.loadTiles( GameLevel::Type::Score , currentLevel ) , levels.getDimensions( GameLevel::Type::Score , currentLevel ) );
+				state = GameState::GAME_SCORE;
+			}
+			else
+			{
+				pressed = false;
 			}
 
-
-			for ( int i = 0; i < nBricks; i++ )
+			for ( int i = 0; i < currBalls; i++ )
 			{
-				bricks[ i ].color( dt );
-				for ( int b = 0; b < currBalls; b++ )
+				balls[ i ].anim( dt );
+			}
+
+			if ( returnBoxGame.isHover( mouse ) )
+			{
+				if ( wnd.mouse.LeftIsPressed( ) )
 				{
-					if ( bricks[ i ].isCollidingBall( balls[ b ] ) )
+					currentLevel = 1;
+					levelChange( levels.loadTiles( GameLevel::Type::Menu , currentLevel ) , levels.getDimensions( GameLevel::Type::Menu , currentLevel ) );
+					state = GameState::GAME_MENU;
+					timerFlickerAnim.setState( false );
+					timerFlickerAnim.reset( );
+					scoreFlickerAnim = false;
+					spaceClicked = false;
+
+					soundChange.StopAll( );
+					soundMusic = Sound( L"Sounds\\musicTitle.wav" , 0.0f , 34.0f );
+					soundMusic.StopAll( );
+					soundMusic.Play( 1.0f , musicVol );
+
+					G_BALL_SPEED = 550.0f;
+				}
+
+				if ( !returnHover )
+				{
+					soundPlay = Sound( L"Sounds\\button.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , soundEffectVol );
+					returnBoxGame.setFill( Colors::White );
+					returnBoxGame.setBorder( Colors::Red );
+					returnBoxGame.setTextCol( Colors::Black );
+				}
+				returnHover = true;
+			}
+			else
+			{
+				returnHover = false;
+				returnBoxGame.setFill( menuBoxCol );
+				returnBoxGame.setBorder( Colors::White );
+				returnBoxGame.setTextCol( Colors::White );;
+			}
+
+			if ( brickAnim )
+			{
+				for ( int i = 0; i < nBricks; i++ )
+				{
+					if ( bricks[ i ].getType( ) == Brick::Type::extra ||
+						 bricks[ i ].getType( ) == Brick::Type::invinc )
 					{
-						if ( brickArray[ current2dIndex ][ 1 ][ i ] != 0 )
+						bricks[ i ].hit = true;
+					}
+				}
+				for ( int i = 0; i < blockBricksCurr; i++ )
+				{
+					if ( blockBricks[ i ].getType( ) == Brick::Type::extra ||
+						 blockBricks[ i ].getType( ) == Brick::Type::invinc )
+					{
+						blockBricks[ i ].hit = true;
+					}
+				}
+				brickAnim = false;
+			}
+
+			if ( timerStart.getState( ) )
+			{
+
+				if ( play )
+				{
+					soundMusic = Sound( L"Sounds\\music.wav" , 0.0f, 169.0f);
+					soundMusic.StopAll( );
+					soundMusic.Play( 1.0f , musicVol );
+					play = false;
+				}
+
+				paddle.update( wnd.kbd , dt , time );
+				paddle.wallCollision( wall.getWall( ) );
+
+				if ( !spaceClicked )
+				{
+					for ( int i = 0; i < currBalls; i++ )
+					{
+						balls[ i ].setPosition( Vec2( paddle.getVec( ).x + offset , PADDLE_Y - 12.0f ) );
+					}
+				}
+
+				if ( wnd.kbd.KeyIsPressed( VK_UP ) && !spaceClicked )
+				{
+					spaceClicked = true;
+					paddleHasBall = false;
+					soundPlay = Sound( L"Sounds\\arkpad.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , soundEffectVol );
+				}
+
+				if ( spaceClicked )
+				{
+					for ( int i = 0; i < currBalls; i++ )
+					{
+						balls[ i ].update( dt );
+						if ( currBalls > 1 )
 						{
-							const float newCollisionDistSq = ( balls[ b ].getPosition( ) - bricks[ i ].getRect( ).getCenter( ) ).GetLengthSq( );
-							if ( collisionHappened )
+							if ( balls[ i ].wallCollision( wall.getWall( ) , false ) )
+							{
+								balls.erase( balls.begin( ) + i );
+								currBalls--;
+							}
+						}
+						else
+						{
+							balls[ i ].wallCollision( wall.getWall( ) , true );
+							hasBalls = false;
+						}
+					}
+				}
+
+				if ( balls[ 0 ].getRestart( ) )
+				{
+					offset = getOffset( );
+					balls[ 0 ].switchRestart( );
+					balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 12.0f ) );
+					balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
+					paddle.setPos( Vec2( 400.0f , PADDLE_Y ) );
+					timerStart.setState( false );
+					spaceClicked = false;
+					lives--;
+					soundPlay = Sound( L"Sounds\\arkrestart.wav" );
+					soundPlay.StopAll( );
+					soundPlay.Play( 1.0f , soundEffectVol );
+				}
+
+
+				for ( int i = 0; i < nBricks; i++ )
+				{
+					checkCollision( bricks[ i ] , i , collisionHappened , collisionDisSq , collisionIndex , ballIndex , dt );
+
+					for ( PowerUp& power : powers )
+					{
+						for ( int f = 0; f < power.bullets.size( ); f++ )
+						{
+							if ( power.bullets[ f ].brickCollision( bricks[ i ] ) )
+							{
+								if ( ( bricks[ i ].getType( ) == Brick::Type::extra ||
+									   bricks[ i ].getType( ) == Brick::Type::invinc ) && bricks[ i ].health > 0 )
+								{
+									bricks[ i ].hit = true;
+								}
+								if ( bricks[ i ].getDestroyed( ) )
+								{
+									destroyed++;
+									score += 10;
+								}
+							}
+						}
+					}
+				}
+
+				bool collisionHappendBlock = false;
+
+				for ( int i = 0; i < blockBricksCurr; i++ )
+				{
+					blockBricks[ i ].color( dt );
+					for ( int b = 0; b < currBalls; b++ )
+					{
+						if ( blockBricks[ i ].isCollidingBall( balls[ b ] ) )
+						{
+							const float newCollisionDistSq = ( balls[ b ].getPosition( ) - blockBricks[ i ].getRect( ).getCenter( ) ).GetLengthSq( );
+							if ( collisionHappendBlock )
 							{
 								if ( newCollisionDistSq < collisionDisSq )
 								{
@@ -630,395 +694,374 @@ void Game::UpdateModel( float dt )
 							{
 								collisionDisSq = newCollisionDistSq;
 								collisionIndex = i;
-								collisionHappened = true;
+								collisionHappendBlock = true;
 								ballIndex = b;
 							}
 						}
 					}
 				}
-				for ( PowerUp& power : powers )
+
+				if ( collisionHappened )
 				{
-					for ( int f = 0; f < power.bullets.size( ); f++ )
+					collisionHasHappened( bricks , collisionIndex , ballIndex , true );
+
+					if ( bricks[ collisionIndex ].getDestroyed( ) )
 					{
-						if ( power.bullets[ f ].brickCollision( bricks[ i ] ) )
+						switch ( bricks[ collisionIndex ].getType( ) )
 						{
-							if ( ( bricks[ i ].getType( ) == Brick::Type::extra ||
-									bricks[ i ].getType( ) == Brick::Type::invinc ) && bricks[ i ].health > 0 )
+							case Brick::Type::extra:
 							{
-								bricks[ i ].hit = true;
+								score += 30;
 							}
-							if ( bricks[ i ].getDestroyed( ) )
+							case Brick::Type::normal:
 							{
-								destroyed++;
-								score += 10;
+								score += 20;
 							}
 						}
-					}
-				}
-			}
 
-			bool collisionHappendBlock = false;
-
-			for ( int i = 0; i < blockBricksCurr; i++ )
-			{
-				blockBricks[ i ].color( dt );
-				for ( int b = 0; b < currBalls; b++ )
-				{
-					if ( blockBricks[ i ].isCollidingBall( balls[ b ] ) )
-					{
-						const float newCollisionDistSq = ( balls[ b ].getPosition( ) - blockBricks[ i ].getRect( ).getCenter( ) ).GetLengthSq( );
-						if ( collisionHappendBlock )
+						if ( Random::getRand( 0 , powerFreq ) == powerFreq )
 						{
-							if ( newCollisionDistSq < collisionDisSq )
+							switch ( Random::getRand( 0 , 5 ) )
 							{
-								collisionDisSq = newCollisionDistSq;
-								collisionIndex = i;
-								ballIndex = b;
-							}
-						}
-						else
-						{
-							collisionDisSq = newCollisionDistSq;
-							collisionIndex = i;
-							collisionHappendBlock = true;
-							ballIndex = b;
-						}
-					}
-				}
-			}
-
-			if ( collisionHappened )
-			{
-				collisionHasHappened( bricks , collisionIndex , ballIndex , true);
-
-				if ( bricks[ collisionIndex ].getDestroyed( ) )
-				{
-					if ( bricks[ collisionIndex ].getType(  ) == Brick::Type::extra)
-						score += 30;
-					else if ( bricks[ collisionIndex ].getType( ) == Brick::Type::normal )
-						score += 20;
-					
-					if ( Random::getRand( 0 , powerFreq ) == powerFreq )
-					{
-						switch ( Random::getRand( 0 , 4 ) )
-						{
-							case 0:
-							{
-								powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::bullet ) );
-								break;
-							}
-							case 1:
-							{
-								powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::length ) );
-								break;
-							}
-							case 2:
-							{
-								powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::balls ) );
-								break;
-							}
-							case 4:
-							{
-								powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::block ) );
-								break;
-							}
-						}
-					}
-					destroyed++;
-				}
-
-			}
-			if ( collisionHappendBlock )
-			{
-				collisionHasHappened( blockBricks , collisionIndex , ballIndex , true );
-			}
-
-			for ( int i = 0; i < currBalls; i++ )
-			{
-				if ( paddle.ballCollision( balls[ i ] ) )
-				{
-					soundPlay = Sound( L"Sounds\\arkpad.wav" );
-					soundPlay.StopAll( );
-					soundPlay.Play( 1.0f , soundEffectVol );
-				}
-			}
-
-
-			int i = 0;
-			for ( PowerUp& power : powers )
-			{
-				if ( spaceClicked )
-					power.update( dt );
-
-				if ( power.paddleCollision( paddle ) )
-				{
-					switch ( power.getPower( ) )
-					{
-						case PowerUp::powers::length:
-						{
-							score += 80;
-							soundPowerUp = Sound( L"Sounds\\arklengthen.wav" );
-							soundPowerUp.StopAll( );
-							soundPowerUp.Play( 1.0f , soundEffectVol );
-							paddle.lengthPwrUp( );
-							offsetMaxMax = ( ( paddle.getRect( ).right - paddle.getRect( ).left ) / 2 ) - 15.0f;
-							offsetMinMax = -offsetMaxMax;
-							break;
-						}
-						case PowerUp::powers::bullet:
-						{
-							score += 80;
-							if ( !hasBullet )
-							{
-								power.turnOn( );
-								hasBullet = true;
-							}
-							else
-							{
-								powers.erase( powers.begin( ) + i );
-							}
-							break;
-						}
-						case PowerUp::powers::balls:
-						{
-							score += 80;
-							soundPowerUp = Sound( L"Sounds\\arkpower.wav" );
-							soundPowerUp.StopAll( );
-							soundPowerUp.Play( 1.0f , soundEffectVol );
-							int tempBalls = currBalls;
-							currBalls *= 2;
-							for ( int i = 0; i < tempBalls; i++ )
-							{
-								for ( int g = 0; g < 2; g++ )
+								case 0:
 								{
-									float offsetX = getOffset( -100.0f , -275.0f , 100.0f , 275.0f );
-									float offsetY = getOffset( -100.0f , -275.0f , 100.0f , 275.0f );
-									balls.push_back( Ball( balls[ i ].getPosition( ) , Vec2( balls[ i ].getVelocity( ).x + offsetX , balls[ i ].getVelocity( ).y + offsetY ) ) );
+									powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::bullet ) );
+									break;
+								}
+								case 1:
+								{
+									powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::length ) );
+									break;
+								}
+								case 2:
+								{
+									powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::balls ) );
+									break;
+								}
+								case 4:
+								{
+									powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::block ) );
+									break;
+								}
+								case 5:
+								{
+									powers.push_back( PowerUp( bricks[ collisionIndex ].getRect( ) , PowerUp::powers::bomb ) );
+									break;
 								}
 							}
-							break;
 						}
-						case PowerUp::powers::block:
-						{
-							score += 80;
-							soundPowerUp = Sound( L"Sounds\\arkpower.wav" );
-							soundPowerUp.StopAll( );
-							soundPowerUp.Play( 1.0f , soundEffectVol );
-							if ( blockBricksCurr < 14 )
-							{
-								blockBricks[ blockBricksCurr ] = Brick( Rect( Vec2( blockBricksX + ( brickWidth * blockBricksCurr ) , blockBricksY ) , brickWidth , brickHeight ) , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc );
-								blockBricksCurr++;
-							}
-							break;
-						}
+						destroyed++;
 					}
+
 				}
+				//if ( collisionHappendBlock )
+				//{
+				//	collisionHasHappened( blockBricks , collisionIndex , ballIndex , true );
+				//}
 
-				if ( power.getPower( ) == PowerUp::powers::bullet )
+				for ( int i = 0; i < currBalls; i++ )
 				{
-					power.updateBullets( dt , wall.getWall( ) );
-
-					if ( power.shot( paddle , wnd.kbd , dt , spaceClicked ) )
+					if ( paddle.ballCollision( balls[ i ] ) )
 					{
-						soundPlay = Sound( L"Sounds\\arkbullet.wav" );
+						soundPlay = Sound( L"Sounds\\arkpad.wav" );
 						soundPlay.StopAll( );
 						soundPlay.Play( 1.0f , soundEffectVol );
 					}
 				}
 
-				if ( power.wallCollision( wall.getWall( ) ) )
+
+				int i = 0;
+
+				for ( PowerUp& power : powers )
 				{
-					powers.erase( powers.begin( ) + i );
+					if ( spaceClicked )
+						power.update( dt );
+
+					if ( power.paddleCollision( paddle ) )
+					{
+						switch ( power.getPower( ) )
+						{
+							score += 80;
+							case PowerUp::powers::length:
+							{
+
+								soundPowerUp = Sound( L"Sounds\\arklengthen.wav" );
+								soundPowerUp.StopAll( );
+								soundPowerUp.Play( 1.0f , soundEffectVol );
+								paddle.lengthPwrUp( );
+								offsetMaxMax = ( ( paddle.getRect( ).right - paddle.getRect( ).left ) / 2 ) - 15.0f;
+								offsetMinMax = -offsetMaxMax;
+								break;
+							}
+							case PowerUp::powers::bullet:
+							{
+								if ( !hasBullet )
+								{
+									power.turnOn( );
+									hasBullet = true;
+								}
+								else
+								{
+									powers.erase( powers.begin( ) + i );
+								}
+								break;
+							}
+							case PowerUp::powers::balls:
+							{
+								soundPowerUp = Sound( L"Sounds\\arkpower.wav" );
+								soundPowerUp.StopAll( );
+								soundPowerUp.Play( 1.0f , soundEffectVol );
+								int tempBalls = currBalls;
+								currBalls *= 2;
+								for ( int i = 0; i < tempBalls; i++ )
+								{
+									for ( int g = 0; g < 1; g++ )
+									{
+										float offsetX = getOffset( -100.0f , -275.0f , 100.0f , 275.0f );
+										float offsetY = getOffset( -100.0f , -275.0f , 100.0f , 275.0f );
+										balls.push_back( Ball( balls[ i ].getPosition( ) , Vec2( balls[ i ].getVelocity( ).x + offsetX , balls[ i ].getVelocity( ).y + offsetY ) ) );
+									}
+								}
+								break;
+							}
+							case PowerUp::powers::block:
+							{
+								soundPowerUp = Sound( L"Sounds\\arkpower.wav" );
+								soundPowerUp.StopAll( );
+								soundPowerUp.Play( 1.0f , soundEffectVol );
+								if ( blockBricksCurr < 14 )
+								{
+									blockBricks[ blockBricksCurr ] = Brick( Rect( Vec2( blockBricksX + ( brickWidth * blockBricksCurr ) , blockBricksY ) , brickWidth , brickHeight ) , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc );
+									blockBricksCurr++;
+								}
+								break;
+							}
+
+							case PowerUp::powers::bomb:
+							{
+								score -= 150;
+								lives--;
+							}
+						}
+					}
+
+					if ( power.getPower( ) == PowerUp::powers::bullet )
+					{
+						power.updateBullets( dt , wall.getWall( ) );
+
+						if ( power.shot( paddle , wnd.kbd , dt , spaceClicked ) && shotCount < 10 )
+						{
+							soundPlay = Sound( L"Sounds\\arkbullet.wav" );
+							soundPlay.StopAll( );
+							soundPlay.Play( 1.0f , soundEffectVol );
+							shotCount++;
+						}
+						else if ( !power.bulletExists( ) )
+						{
+							powers.erase( powers.begin( ) + i );
+							shotCount = 0;
+						}
+
+					}
+
+					if ( power.wallCollision( wall.getWall( ) ) )
+					{
+						powers.erase( powers.begin( ) + i );
+					}
+					i++;
 				}
-				i++;
+
+				time += dt;
 			}
-
-			time += dt;
-		}
-			//not game started
-		else
-		{
-			timerStart.update( dt );
-			if ( timerStart.checkTime( ) )
-			{
-				timerStart.reset( );
-				timerStart.setState( true );
-			}
-
-			//animate flicker for "ready"
-			timerFlickerAnim.update( dt );
-			if ( timerFlickerAnim.checkTime( ) )
-			{
-				timerFlickerAnim.reset( );
-				timerFlickerAnim.setState( !timerFlickerAnim.getState( ) );
-			}
-		}
-	}
-}
-
-void Game::scoreScreenChange( )
-{
-	current2dIndex = 0;
-	destroyed = 0;
-	nonBrickAmount = 0;
-	indestructable = 0;
-	nBrickCols = brickArray[ current2dIndex ][ 0 ][ 1 ];
-	nBrickRows = brickArray[ current2dIndex ][ 0 ][ 0 ];
-	nBricks = nBrickCols * nBrickRows;
-	offsetMaxMax = 30.0f;
-	offsetMinMax = -30.0f;
-	hasBullet = false;
-	hasBalls = false;
-	play = true;
-	blockBricksCurr = 0;
-
-	soundChange = Sound( L"Sounds\\screenChange.wav" );
-	soundChange.StopAll( );
-	soundChange.Play( 1.0f , soundEffectVol );
-
-	G_BALL_SPEED = 550.0f;
-
-	timerStart.setState( false );
-	timerStart.reset( );
-
-	timerFlickerAnim.setState( false );
-	timerFlickerAnim.reset( );
-	scoreFlickerAnim = false;
-	spaceClicked = false;
-
-	balls.erase( balls.begin( ) + 1 , balls.end( ) );
-	currBalls = 1;
-
-	balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 12.0f ) );
-	balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
-	paddle.setPos( Vec2( 400.0f , PADDLE_Y ) );
-
-	delete[ ] blockBricks;
-	blockBricks = new Brick[ 13 ];
-
-	delete[ ] bricks;
-	for ( PowerUp& e : powers )
-	{
-		e.bullets.clear( );
-	}
-	powers.clear( );
-
-	bricks = new Brick[ nScoreBricks ];
-
-	int i = 0;
-	for ( int y = 0; y < scoreBricksCols; y++ )
-	{
-		for ( int x = 0; x < scoreBricksRows; x++ )
-		{
-			if ( scoreBricks[ 0 ][ i ] > 0 && scoreBricks[ 0 ][ i ] < 6 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( scoreBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( scoreBricksCols * brickHeight ) ) / 2.5 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , brickColors[ ( mainMenuBricks[ 0 ][ i ] ) - 1 ] , 1 , Brick::Type::normal ) );
-			}
-			else if ( scoreBricks[ 0 ][ i ] == 6 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( scoreBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( scoreBricksCols * brickHeight ) ) / 2.5 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc ) );
-			}
-			else if ( scoreBricks[ 0 ][ i ] == 7 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( scoreBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( scoreBricksCols * brickHeight ) ) / 2.5 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Gray , 2 , Brick::Type::extra ) );
-			}
+				//not game started
 			else
 			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( brickWidth ) , ( brickHeight ) ) , brickWidth , brickHeight ) , Colors::Black , 0 , Brick::Type::normal ) );
+				timerStart.update( dt );
+				if ( timerStart.checkTime( ) )
+				{
+					timerStart.reset( );
+					timerStart.setState( true );
+				}
+
+				//animate flicker for "ready"
+				timerFlickerAnim.update( dt );
+				if ( timerFlickerAnim.checkTime( ) )
+				{
+					timerFlickerAnim.reset( );
+					timerFlickerAnim.setState( !timerFlickerAnim.getState( ) );
+				}
 			}
-			i++;
+			break;
 		}
-	}
-}
-
-void Game::menuScreenChange( )
-{
-	current2dIndex = 0;
-	destroyed = 0;
-	nonBrickAmount = 0;
-	indestructable = 0;
-	nBrickCols = brickArray[ current2dIndex ][ 0 ][ 1 ];
-	nBrickRows = brickArray[ current2dIndex ][ 0 ][ 0 ];
-	nBricks = nBrickCols * nBrickRows;
-	offsetMaxMax = 30.0f;
-	offsetMinMax = -30.0f;
-	hasBullet = false;
-	hasBalls = false;
-	play = true;
-	blockBricksCurr = 0;
-	
-	soundChange.StopAll( );
-
-	G_BALL_SPEED = 550.0f;
-
-	time = 0;
-	score = 0;
-	lives = 6;
-
-	timerStart.setState( false );
-	timerStart.reset( );
-	spaceClicked = false;
-
-	menuScreenWait.setState( false );
-	menuScreenWait.reset( );
-
-	balls.erase( balls.begin( ) + 1 , balls.end( ) );
-	currBalls = 1;
-
-	balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 12.0f ) );
-	balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
-	paddle.setPos( Vec2( 400.0f , PADDLE_Y ) );
-
-	delete[ ] blockBricks;
-	blockBricks = new Brick[ 13 ];
-
-	delete[ ] bricks;
-	for ( PowerUp& e : powers )
-	{
-		e.bullets.clear( );
-	}
-	powers.clear( );
-
-	bricks = new Brick[ menuBricksCols * menuBricksRows ];
-
-	int i = 0;
-	for ( int y = 0; y < menuBricksCols; y++ )
-	{
-		for ( int x = 0; x < menuBricksRows; x++ )
+		case GameState::GAME_CREATE:
 		{
-			if ( mainMenuBricks[ 0 ][ i ] > 0 && mainMenuBricks[ 0 ][ i ] < 6 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , brickColors[ ( mainMenuBricks[ 0 ][ i ] ) - 1 ] , 1 , Brick::Type::normal ) );
-			}
-			else if ( mainMenuBricks[ 0 ][ i ] == 6 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc ) );
-			}
-			else if ( mainMenuBricks[ 0 ][ i ] == 7 )
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Gray , 2 , Brick::Type::extra ) );
-			}
-			else
-			{
-				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Black , 0 , Brick::Type::normal ) );
-			}
-			i++;
+			break;
 		}
 	}
 }
 
-void Game::changeLevel()
+//void Game::scoreScreenChange( )
+//{
+//	currentLevel = 0;
+//	destroyed = 0;
+//	nonBrickAmount = 0;
+//	indestructable = 0;
+//	nBrickCols = brickArray[ currentLevel ][ 0 ][ 1 ];
+//	nBrickRows = brickArray[ currentLevel ][ 0 ][ 0 ];
+//	nBricks = nBrickCols * nBrickRows;
+//	offsetMaxMax = 30.0f;
+//	offsetMinMax = -30.0f;
+//	hasBullet = false;
+//	hasBalls = false;
+//	play = true;
+//	blockBricksCurr = 0;
+//
+//	soundChange = Sound( L"Sounds\\screenChange.wav" );
+//	soundChange.StopAll( );
+//	soundChange.Play( 1.0f , soundEffectVol );
+//
+//	G_BALL_SPEED = 550.0f;
+//
+//	timerStart.setState( false );
+//	timerStart.reset( );
+//
+//	timerFlickerAnim.setState( false );
+//	timerFlickerAnim.reset( );
+//	scoreFlickerAnim = false;
+//	spaceClicked = false;
+//
+//	balls.erase( balls.begin( ) + 1 , balls.end( ) );
+//	currBalls = 1;
+//
+//	balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 12.0f ) );
+//	balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
+//	paddle.setPos( Vec2( 400.0f , PADDLE_Y ) );
+//
+//	delete[ ] blockBricks;
+//	blockBricks = new Brick[ 13 ];
+//
+//	bricks.clear( );
+//	for ( PowerUp& e : powers ) { e.bullets.clear( ); }
+//	powers.clear( );
+//
+//	/*bricks = new Brick[ nScoreBricks ];*/
+//
+//	int i = 0;
+//	for ( int y = 0; y < scoreBricksCols; y++ )
+//	{
+//		for ( int x = 0; x < scoreBricksRows; x++ )
+//		{
+//			if ( scoreBricks[ 0 ][ i ] > 0 && scoreBricks[ 0 ][ i ] < 6 )
+//			{
+//				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( scoreBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( scoreBricksCols * brickHeight ) ) / 2.5 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , brickColors[ ( mainMenuBricks[ 0 ][ i ] ) - 1 ] , 1 , Brick::Type::normal ) );
+//			}
+//			else if ( scoreBricks[ 0 ][ i ] == 6 )
+//			{
+//				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( scoreBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( scoreBricksCols * brickHeight ) ) / 2.5 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc ) );
+//			}
+//			else if ( scoreBricks[ 0 ][ i ] == 7 )
+//			{
+//				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( scoreBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( scoreBricksCols * brickHeight ) ) / 2.5 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Gray , 2 , Brick::Type::extra ) );
+//			}
+//			else
+//			{
+//				bricks[ i ] = ( Brick( Rect( Vec2( ( brickWidth ) , ( brickHeight ) ) , brickWidth , brickHeight ) , Colors::Black , 0 , Brick::Type::normal ) );
+//			}
+//			i++;
+//		}
+//	}
+//}
+
+//void Game::menuScreenChange( )
+//{
+//	currentLevel = 0;
+//	destroyed = 0;
+//	nonBrickAmount = 0;
+//	indestructable = 0;
+//	nBrickCols = brickArray[ currentLevel ][ 0 ][ 1 ];
+//	nBrickRows = brickArray[ currentLevel ][ 0 ][ 0 ];
+//	nBricks = nBrickCols * nBrickRows;
+//	offsetMaxMax = 30.0f;
+//	offsetMinMax = -30.0f;
+//	hasBullet = false;
+//	hasBalls = false;
+//	play = true;
+//	blockBricksCurr = 0;
+//	
+//	soundChange.StopAll( );
+//
+//	G_BALL_SPEED = 550.0f;
+//
+//	time = 0;
+//	score = 0;
+//	lives = 6;
+//
+//	timerStart.setState( false );
+//	timerStart.reset( );
+//	spaceClicked = false;
+//
+//	menuScreenWait.setState( false );
+//	menuScreenWait.reset( );
+//
+//	balls.erase( balls.begin( ) + 1 , balls.end( ) );
+//	currBalls = 1;
+//
+//	balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 12.0f ) );
+//	balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
+//	paddle.setPos( Vec2( 400.0f , PADDLE_Y ) );
+//
+//	delete[ ] blockBricks;
+//	blockBricks = new Brick[ 13 ];
+//
+//	bricks.clear( );
+//	for ( PowerUp& e : powers )
+//	{
+//		e.bullets.clear( );
+//	}
+//	powers.clear( );
+//
+//	//bricks = new Brick[ menuBricksCols * menuBricksRows ];
+//
+//	int i = 0;
+//	for ( int y = 0; y < menuBricksCols; y++ )
+//	{
+//		for ( int x = 0; x < menuBricksRows; x++ )
+//		{
+//			if ( mainMenuBricks[ 0 ][ i ] > 0 && mainMenuBricks[ 0 ][ i ] < 6 )
+//			{
+//				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , brickColors[ ( mainMenuBricks[ 0 ][ i ] ) - 1 ] , 1 , Brick::Type::normal ) );
+//			}
+//			else if ( mainMenuBricks[ 0 ][ i ] == 6 )
+//			{
+//				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc ) );
+//			}
+//			else if ( mainMenuBricks[ 0 ][ i ] == 7 )
+//			{
+//				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Gray , 2 , Brick::Type::extra ) );
+//			}
+//			else
+//			{
+//				bricks[ i ] = ( Brick( Rect( Vec2( ( gfx.ScreenWidth - ( menuBricksRows * brickWidth ) ) / 2 , ( gfx.ScreenHeight - ( menuBricksCols * brickHeight ) ) / 3 ) + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Black , 0 , Brick::Type::normal ) );
+//			}
+//			i++;
+//		}
+//	}
+//}
+
+void Game::levelChange( const std::vector< std::vector<int> >& gameBricks , const std::tuple<int , int>& dimensions )
 {
 	destroyed = 0;
 	nonBrickAmount = 0;
 	indestructable = 0;
-	nBrickCols = brickArray[current2dIndex][0][1];
-	nBrickRows = brickArray[current2dIndex][0][0];
-	nBricks = nBrickCols * nBrickRows;
+
 	offsetMaxMax = 30.0f;
 	offsetMinMax = -30.0f;
+
 	hasBullet = false;
 	hasBalls = false;
+
+	std::tie(nBrickRows, nBrickCols) = dimensions;
+	nBricks = nBrickCols * nBrickRows;
 
 	offset = getOffset( );
 	balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 12.0f ) );
@@ -1027,14 +1070,9 @@ void Game::changeLevel()
 	paddle.lengthPwrUpReset( );
 	brickAnim = true;
 
-	soundChange = Sound( L"Sounds\\screenChange.wav" );
-	soundChange.StopAll( );
-	soundChange.Play( 1.0f , soundEffectVol );
-
 	timerStart.setState( false );
 	timerStart.reset( );
 	spaceClicked = false;
-
 
 	balls.erase( balls.begin( ) + 1 , balls.end( ) );
 	currBalls = 1;
@@ -1048,39 +1086,40 @@ void Game::changeLevel()
 	}
 	topLeft = Vec2((wall.getWall().left + padX), (wall.getWall().top + padY));
 
-	delete[ ] bricks;
+	bricks.clear( );
 	for ( PowerUp& e : powers )
 	{
 		e.bullets.clear( );
 	}
 	powers.clear( );
 
-	bricks = new Brick[nBricks];
-	int i = 0;
-	for (int y = 0; y < nBrickCols; y++)
+	int y = 0 , x = 0;
+	for ( auto& row : gameBricks )
 	{
-		for (int x = 0; x < nBrickRows; x++)
+		for ( auto& col : row )
 		{
-			if (brickArray[current2dIndex][1][i] > 0 && brickArray[current2dIndex][1][i] < 6)
+			if ( col > 0 && col < 6 )
 			{
-				bricks[ i ] = (Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), brickColors[(brickArray[current2dIndex][1][i]) - 1], 1, Brick::Type::normal));
+				bricks.push_back( Brick( Rect( topLeft + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , brickColors[ ( col ) - 1 ] , 1 , Brick::Type::normal ) );
 			}
-			else if (brickArray[current2dIndex][1][i] == 6)
+			else if ( col == 6 )
 			{
-				bricks[ i ] = (Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::MakeRGB(255, 137, 0), 1, Brick::Type::invinc ));
+				bricks.push_back( Brick( Rect( topLeft + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc ) );
 				indestructable++;
 			}
-			else if (brickArray[current2dIndex][1][i] == 7)
+			else if ( col == 7 )
 			{
-				bricks[ i ] = (Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Gray, 2, Brick::Type::extra ));
+				bricks.push_back( Brick( Rect( topLeft + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Gray , 2 , Brick::Type::extra ) );
 			}
 			else
 			{
-				bricks[ i ] = (Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), Colors::Black, 0, Brick::Type::normal ));
+				bricks.push_back( Brick( Rect( topLeft + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , Colors::Black , 0 , Brick::Type::normal ) );
 				nonBrickAmount++;
 			}
-			i++;
+			x++;
 		}
+		y++;
+		x = 0;
 	}
 }
 
@@ -1140,8 +1179,36 @@ void Game::drawTimeFormat( float time , Vec2 pos, int size )
 
 }
 
+void Game::checkCollision( Brick& brick, int i, bool& collisionHappened , float& collisionDistSq , int& collisionIndex , int& ballIndex, float dt )
+{
+	brick.color( dt );
+	for ( int b = 0; b < currBalls; b++ )
+	{
+		if ( brick.isCollidingBall( balls[ b ] ) )
+		{
+			const float newCollisionDistSq = ( balls[ b ].getPosition( ) - brick.getRect( ).getCenter( ) ).GetLengthSq( );
+			if ( collisionHappened )
+			{
+				if ( newCollisionDistSq < collisionDistSq )
+				{
+					collisionDistSq = newCollisionDistSq;
+					collisionIndex = i;
+					ballIndex = b;
+				}
+			}
+			else
+			{
+				collisionDistSq = newCollisionDistSq;
+				collisionIndex = i;
+				collisionHappened = true;
+				ballIndex = b;
+			}
+		}
+	}
+}
 
-void Game::collisionHasHappened( Brick* bricks , int collisionIndex , int ballIndex , bool sound)
+
+void Game::collisionHasHappened( std::vector< Brick >& bricks , int collisionIndex , int ballIndex , bool sound)
 {
 
 	if ( bricks[ collisionIndex ].getType( ) == Brick::Type::invinc || bricks[ collisionIndex ].getType( ) == Brick::Type::extra )
@@ -1199,137 +1266,144 @@ Color Game::darkenCol( const Color& in , float amount )
 	return temp;
 }
 
+
 //drawing logic loop
 void Game::ComposeFrame()
 {
 	//main menu screen
-	if ( menuScreen )
+	switch ( state )
 	{
-		menuWall.draw( gfx );
-
-		text.drawText( gfx , "Ark Annoyed" , Vec2( screenHalfWidth + 1 , ( screenHalfHeight - 240 ) + 1 ) , Colors::Red , 10 , 1 );
-		text.drawText( gfx , "Ark Annoyed" , Vec2( screenHalfWidth + 2 , ( screenHalfHeight - 240 ) + 2) , Colors::Red , 10 , 1 );
-		text.drawText( gfx , "Ark Annoyed" , Vec2( screenHalfWidth + 3, ( screenHalfHeight - 240 ) + 3 ) , Colors::Red , 10 , 1 );
-		text.drawText( gfx , "Ark Annoyed" , Vec2( screenHalfWidth , screenHalfHeight - 240 ) , Colors::White , 10, 1 );
-
-		boxEasy.draw( gfx , true );
-		boxMedium.draw( gfx , true );
-		boxHard.draw( gfx , true );
-
-		text.drawText( gfx , "SFX" , Vec2( screenQuarterWidth - soundBoxW - 25 , 570.0f ) , Colors::White , 2 , 1 );
-		text.drawText( gfx , std::to_string( int( soundEffectVol * 100 ) ) , Vec2( screenQuarterWidth + soundBoxW + 10 , 570.0f - soundBoxH - soundBoxH ) , Colors::White , 2 );
-		boxSfx.draw( gfx );
-		boxSfxVol.draw( gfx );
-
-		text.drawText( gfx , "MUSIC" , Vec2( screen3QuarterWidth - soundBoxW - 35 , 570.0f ) , Colors::White , 2 , 1 );
-		text.drawText( gfx , std::to_string( int(musicVol * 100) ) , Vec2( screen3QuarterWidth + soundBoxW + 10 , 570.0f - soundBoxH - soundBoxH ) , Colors::White , 2 );
-		boxMusic.draw( gfx );
-		boxMusicVol.draw( gfx );
-		
-
-		for ( int i = 0; i < nMenuBricks; i++ )
+		case GameState::GAME_MENU:
 		{
-			bricks[ i ].draw( gfx );
-		}
+			menuWall.draw( gfx );
 
-		balls[ 0 ].draw( gfx );
-		paddle.draw( gfx );
+			text.drawText( gfx , "Ark Annoyed" , Vec2( screenHalfWidth + 1 , ( screenHalfHeight - 240 ) + 1 ) , Colors::Red , 10 , 1 );
+			text.drawText( gfx , "Ark Annoyed" , Vec2( screenHalfWidth + 2 , ( screenHalfHeight - 240 ) + 2 ) , Colors::Red , 10 , 1 );
+			text.drawText( gfx , "Ark Annoyed" , Vec2( screenHalfWidth + 3 , ( screenHalfHeight - 240 ) + 3 ) , Colors::Red , 10 , 1 );
+			text.drawText( gfx , "Ark Annoyed" , Vec2( screenHalfWidth , screenHalfHeight - 240 ) , Colors::White , 10 , 1 );
 
-	}
-	//score screen
-	else if ( scoreScreen )
-	{
-		menuWall.draw( gfx );
+			boxEasy.draw( gfx , true );
+			boxMedium.draw( gfx , true );
+			boxHard.draw( gfx , true );
+			boxCreate.draw( gfx , true );
 
-		returnBoxScore.draw( gfx , true );
+			text.drawText( gfx , "SFX" , Vec2( screenQuarterWidth - soundBoxW - 25 , 570.0f ) , Colors::White , 2 , 1 );
+			text.drawText( gfx , std::to_string( int( soundEffectVol * 100 ) ) , Vec2( screenQuarterWidth + soundBoxW + 10 , 570.0f - soundBoxH - soundBoxH ) , Colors::White , 2 );
+			boxSfx.draw( gfx );
+			boxSfxVol.draw( gfx );
 
-		text.drawText( gfx , scoreText , Vec2( screenHalfWidth + 1 , ( screenHalfHeight - 240 ) + 1 ) , Colors::Red , 10 , 1 );
-		text.drawText( gfx , scoreText , Vec2( screenHalfWidth + 2 , ( screenHalfHeight - 240 ) + 2 ) , Colors::Red , 10 , 1 );
-		text.drawText( gfx , scoreText , Vec2( screenHalfWidth + 3 , ( screenHalfHeight - 240 ) + 3 ) , Colors::Red , 10 , 1 );
+			text.drawText( gfx , "MUSIC" , Vec2( screen3QuarterWidth - soundBoxW - 35 , 570.0f ) , Colors::White , 2 , 1 );
+			text.drawText( gfx , std::to_string( int( musicVol * 100 ) ) , Vec2( screen3QuarterWidth + soundBoxW + 10 , 570.0f - soundBoxH - soundBoxH ) , Colors::White , 2 );
+			boxMusic.draw( gfx );
+			boxMusicVol.draw( gfx );
 
-		text.drawText( gfx , scoreText , Vec2( screenHalfWidth , ( screenHalfHeight - 240 ) ) , Colors::White , 10 , 1 );
 
-
-		for ( int i = 0; i < nScoreBricks; i++ )
-		{
-			bricks[ i ].draw( gfx );
-		}
-
-		text.drawText( gfx , "Time" , Vec2( screenHalfWidth - 80, screen2ThirdHeight - 205 ) , Colors::Red , 4 , 1 );
-
-		if ( !scoreFlickerAnim )
-		{
-			text.drawText( gfx , std::to_string( scoreDraw ) , Vec2( screenHalfWidth + 60 , screen2ThirdHeight - 65 ) , Colors::White , 4 , 1 );
-			drawTimeFormat( timeDraw , Vec2( screenHalfWidth + 60 , screen2ThirdHeight - 205 ) , 4 );
-		}
-		else
-		{
-			if ( !timerFlickerAnim.getState( ) )
+			for ( auto& brick : bricks )
 			{
-				drawTimeFormat( timeDraw , Vec2( screenHalfWidth + 60 , screen2ThirdHeight - 205 ) , 4 );
-				text.drawText( gfx , std::to_string( scoreDraw ) , Vec2( screenHalfWidth + 60 , screen2ThirdHeight - 65 ) , Colors::White , 4 , 1 );
+				brick.draw( gfx );
 			}
-		}
 
-		text.drawText( gfx , "Score" , Vec2( screenHalfWidth - 75 , screen2ThirdHeight - 65) , Colors::Red , 4 , 1 );
-
-		balls[ 0 ].draw( gfx );
-		paddle.draw( gfx );
-
-
-	}
-	//game screen
-	else
-	{
-		wall.draw( gfx );
-
-		for ( int i = 0; i < nBricks; i++ )	
-		{
-			bricks[ i ].draw( gfx );
-		}
-
-		for ( PowerUp& power : powers )
-		{
-			power.draw( gfx );
-
-			if ( power.getPower( ) == PowerUp::powers::bullet )
-			{
-				power.drawBullets( gfx );
-			}
-		}
-
-		for ( int i = 0; i < blockBricksCurr; i++ )
-		{
-			blockBricks[ i ].draw( gfx );
-		}
-
-		if ( timerStart.getState( ) )
-		{
+			balls[ 0 ].draw( gfx );
 			paddle.draw( gfx );
-			for ( int i = 0; i < currBalls; i++ )
-			{
-				balls[ i ].draw( gfx );
-			}
+			break;
 		}
-
-		if ( !timerStart.getState( ) )
+		case GameState::GAME_ACTIVE:
 		{
-			if ( !timerFlickerAnim.getState( ) )
-				text.drawText( gfx , "Round " + std::to_string( current2dIndex + 1 ) , Vec2( screenHalfWidth , 435.0f ) , Colors::White , 3 , 1 );
+			wall.draw( gfx );
 
-			text.drawText( gfx , "Ready" , Vec2( screenHalfWidth , 475.0f ) , Colors::White , 3 , 1 );
+			for ( const Brick& brick : bricks )
+			{
+				brick.draw( gfx );
+			}
+
+			for ( PowerUp& power : powers )
+			{
+				power.draw( gfx );
+
+				if ( power.getPower( ) == PowerUp::powers::bullet )
+				{
+					power.drawBullets( gfx );
+				}
+			}
+
+			for ( int i = 0; i < blockBricksCurr; i++ )
+			{
+				blockBricks[ i ].draw( gfx );
+			}
+
+			if ( timerStart.getState( ) )
+			{
+				paddle.draw( gfx );
+				for ( int i = 0; i < currBalls; i++ )
+				{
+					balls[ i ].draw( gfx );
+				}
+			}
+
+			if ( !timerStart.getState( ) )
+			{
+				if ( !timerFlickerAnim.getState( ) )
+					text.drawText( gfx , "Round " + std::to_string( currentLevel ) , Vec2( screenHalfWidth , 435.0f ) , Colors::White , 3 , 1 );
+
+				text.drawText( gfx , "Ready" , Vec2( screenHalfWidth , 475.0f ) , Colors::White , 3 , 1 );
+			}
+
+			text.drawText( gfx , "Time" , Vec2( 23.0f , 5.0f ) , Colors::White , 2 );
+			drawTimeFormat( time , Vec2( 45.0f , 30.0f ) , 2 );
+
+			text.drawText( gfx , "Lives" , Vec2( screenThirdHeight , 12.0f ) , Colors::Red , 2 , 1 );
+			text.drawText( gfx , std::to_string( lives ) , Vec2( screenThirdHeight , 32.0f ) , Colors::White , 2 , 1 );
+
+			text.drawText( gfx , "Score" , Vec2( screen2ThirdWidth , 12.0f ) , Colors::Red , 2 , 1 );
+			text.drawText( gfx , std::to_string( score ) , Vec2( screen2ThirdWidth , 32.0f ) , Colors::White , 2 , 1 );
+
+			returnBoxGame.draw( gfx , true );
+			break;
 		}
+		case GameState::GAME_SCORE:
+		{
+			menuWall.draw( gfx );
 
-		text.drawText( gfx , "Time" , Vec2( 23.0f , 5.0f ) , Colors::White , 2 );
-		drawTimeFormat( time , Vec2( 45.0f , 30.0f ) , 2);
+			returnBoxScore.draw( gfx , true );
 
-		text.drawText( gfx , "Lives" , Vec2( screenThirdHeight , 12.0f ) , Colors::Red , 2 , 1 );
-		text.drawText( gfx , std::to_string( lives ) , Vec2( screenThirdHeight , 32.0f ) , Colors::White , 2 , 1 );
+			text.drawText( gfx , scoreText , Vec2( screenHalfWidth + 1 , ( screenHalfHeight - 240 ) + 1 ) , Colors::Red , 10 , 1 );
+			text.drawText( gfx , scoreText , Vec2( screenHalfWidth + 2 , ( screenHalfHeight - 240 ) + 2 ) , Colors::Red , 10 , 1 );
+			text.drawText( gfx , scoreText , Vec2( screenHalfWidth + 3 , ( screenHalfHeight - 240 ) + 3 ) , Colors::Red , 10 , 1 );
 
-		text.drawText( gfx , "Score", Vec2( screen2ThirdWidth , 12.0f ) , Colors::Red , 2 , 1 );
-		text.drawText( gfx , std::to_string( score ) , Vec2( screen2ThirdWidth , 32.0f ) , Colors::White , 2 , 1 );
+			text.drawText( gfx , scoreText , Vec2( screenHalfWidth , ( screenHalfHeight - 240 ) ) , Colors::White , 10 , 1 );
 
-		returnBoxGame.draw( gfx , true);
+
+			for ( const Brick& brick : bricks )
+			{
+				brick.draw( gfx );
+			}
+
+			text.drawText( gfx , "Time" , Vec2( screenHalfWidth - 80 , screen2ThirdHeight - 205 ) , Colors::Red , 4 , 1 );
+
+			if ( !scoreFlickerAnim )
+			{
+				text.drawText( gfx , std::to_string( scoreDraw ) , Vec2( screenHalfWidth + 60 , screen2ThirdHeight - 65 ) , Colors::White , 4 , 1 );
+				drawTimeFormat( timeDraw , Vec2( screenHalfWidth + 60 , screen2ThirdHeight - 205 ) , 4 );
+			}
+			else
+			{
+				if ( !timerFlickerAnim.getState( ) )
+				{
+					drawTimeFormat( timeDraw , Vec2( screenHalfWidth + 60 , screen2ThirdHeight - 205 ) , 4 );
+					text.drawText( gfx , std::to_string( scoreDraw ) , Vec2( screenHalfWidth + 60 , screen2ThirdHeight - 65 ) , Colors::White , 4 , 1 );
+				}
+			}
+
+			text.drawText( gfx , "Score" , Vec2( screenHalfWidth - 75 , screen2ThirdHeight - 65 ) , Colors::Red , 4 , 1 );
+
+			balls[ 0 ].draw( gfx );
+			paddle.draw( gfx );
+
+			break;
+		}
+		case GameState::GAME_CREATE:
+		{
+			break;
+		}
 	}
-
 }

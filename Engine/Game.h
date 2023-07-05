@@ -51,22 +51,26 @@ private:
 	void ComposeFrame();
 	void UpdateModel(float dt);
 
+
+	/********************************/
+	/*  User Functions              */
 	float getOffset( );
 	float getOffset( float minMin , float minMax , float maxMin , float maxMax );
 	std::string removeTail( std::string& str );
-	void drawTimeFormat( float time , Vec2 pos, int size);
+	void drawTimeFormat( float time , Vec2 pos , int size );
 
-	void checkCollision( Brick& brick, int i, bool& collisionHappened , float& collisionDistSq , int& collisionIndex , int& ballIndex, float dt );
-	void collisionHasHappened( std::vector< Brick >& bricks, int collisionIndex, int ballIndex , bool sound);
+	void checkCollision( Brick& brick , int i , bool& collisionHappened , float& collisionDistSq , int& collisionIndex , int& ballIndex , float dt );
+	void collisionHasHappened( std::vector< Brick >& bricks , int collisionIndex , int ballIndex , bool sound );
 
 	void drawScore( );
 
 	Color lightenCol( const Color& in , float amount );
 	Color darkenCol( const Color& in , float amount );
 
-	void levelChange( const std::vector< std::vector<int> >& bricks, const std::tuple<int, int>& dimensions ) ;
-	/********************************/
-	/*  User Functions              */
+	void levelChange( const std::vector< std::vector<int> >& bricks , const std::tuple<int , int>& dimensions );
+
+	void playSound( Sound& sound , std::wstring file, float vol );
+	void playSound( Sound& sound , std::wstring file, float vol , float start , float end );
 	/********************************/
 private:
 	MainWindow& wnd;

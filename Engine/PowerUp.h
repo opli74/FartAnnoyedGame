@@ -44,18 +44,29 @@ public:
 
 	PowerUp() = default;
 	PowerUp(Rect& rect, PowerUp::powers in);
-	void draw(Graphics& gfx) const;
+	
+	//setters
+	void draw( Graphics& gfx ) const;
 	void drawBullets( Graphics& gfx );
+
+	void setCollisionWithPaddle( bool in );
+
 	void updateBullets( float dt , const Rect& wall );
+
+	void update( float dt );
+
+	//getters
 	bool bulletExists( );
-	Rect getBullets( );
-	void update(float dt);
-	bool paddleCollision(Paddle& paddle);
-	bool wallCollision(const Rect& wall);
-	void turnOn( );
+
 	PowerUp::powers getPower( );
-	bool shot( Paddle& paddle , const Keyboard& kdb, float dt , bool shoot);
+	Rect getBullets( );
 	Rect getRect() const;
+
+	bool paddleCollision( Paddle& paddle );
+	bool wallCollision( const Rect& wall );
+	bool getCollisionWithPaddle( ) const;
+
+	bool shot( Paddle& paddle , const Keyboard& kdb , float dt , bool shoot );
 
 public:
 	std::vector<Bullet> bullets;
@@ -70,7 +81,7 @@ private:
 	Vec2 pos;
 	Vec2 vel = Vec2(0.0f, 150.0f);
 	bool destroyed = false;
-	bool powerOn = false;
+	bool collisionWithPaddle = false;
 
 	powers type;
 

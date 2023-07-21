@@ -19,17 +19,31 @@ public:
 	};
 
 	Brick() = default;
-	Brick(const Rect& rect, Color c_, const int health, Type type);
-	void draw(Graphics& gfx) const;
-	bool isCollidingBall(const Ball& ball);
-	void executeBallCollision(Ball& ball);
+	Brick( const Rect& rect , int x_, int y_,  Color c_ , const int health , Type type );
+	
+	//setters
+	void draw( Graphics& gfx ) const;
+
+	void color( float dt );
+
+	void setColor( const Color& in );
+
+	void executeBallCollision( Ball& ball );
 	void collision( );
-	Color getColor() const;
+
+	//getters
+	bool isHover( Vec2 pos );
+	
+	int getX( );
+	int getY( );
+
+	bool getDestroyed( );
+
+	Rect getRect( ) const;
+	Color getColor( ) const;
 	Type getType( ) const;
-	void setColor(const Color& in);
-	Rect getRect() const;
-	bool getDestroyed(); 
-	void color(float dt);
+
+	bool isCollidingBall( const Ball& ball );
 
 public:
 	bool hit = false;
@@ -45,5 +59,9 @@ private:
 	float width = 1.0f;
 	int times = 0;
 	Type type;
+
+	bool hover = false;
+
+	int x = 0 , y = 0;
 };
 

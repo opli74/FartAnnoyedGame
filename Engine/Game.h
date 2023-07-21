@@ -39,6 +39,7 @@
 #include "GameLevel.h"
 #include <random>
 #include <string>
+#include <map>
 
 class Game
 {
@@ -54,23 +55,30 @@ private:
 
 	/********************************/
 	/*  User Functions              */
+
+	//logic
 	float getOffset( );
 	float getOffset( float minMin , float minMax , float maxMin , float maxMax );
-	std::string removeTail( std::string& str );
-	void drawTimeFormat( float time , Vec2 pos , int size );
 
+	std::string removeTail( std::string& str );
+
+	void playSound( Sound& sound , std::wstring file , float vol );
+	void playSound( Sound& sound , std::wstring file , float vol , float start , float end );
+	
 	void checkCollision( Brick& brick , int i , bool& collisionHappened , float& collisionDistSq , int& collisionIndex , int& ballIndex , float dt );
 	void collisionHasHappened( std::vector< Brick >& bricks , int collisionIndex , int ballIndex , bool sound );
-
-	void drawScore( );
 
 	Color lightenCol( const Color& in , float amount );
 	Color darkenCol( const Color& in , float amount );
 
-	void levelChange( const std::vector< std::vector<int> >& bricks , const std::tuple<int , int>& dimensions );
+	void levelChange( const std::vector< std::vector<int> >& bricks , const std::tuple<int , int>& dimensions , bool drawSpaceBricks = false );
 
-	void playSound( Sound& sound , std::wstring file, float vol );
-	void playSound( Sound& sound , std::wstring file, float vol , float start , float end );
+	//drawing
+	void drawTimeFormat( float time , Vec2 pos , int size );
+
+	void drawScore( );
+
+	void drawTitle( );
 	/********************************/
 private:
 	MainWindow& wnd;
@@ -100,21 +108,22 @@ private:
 
 	//boxes for main menu
 	float boxW = 125.0f , boxH = 35.0f;
-	bool eHover = false , mHover = false , hHover = false, cHover = false;
+
+	bool playSoundOnce = true;
+
+	Color boxLight = Colors::LightGray , menuBoxCol = Colors::MakeRGB( 20 , 20 , 20 );
 
 	Rect easy = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 - 120 ) , boxW , boxH );
-	Rect medium = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 - 20) , boxW , boxH );
-	Rect hard = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 + 80 ) , boxW , boxH  );
-
+	Rect medium = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 - 20 ) , boxW , boxH );
+	Rect hard = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 + 80 ) , boxW , boxH );
 	Rect create = Rect::fromCenter( Vec2( gfx.ScreenWidth / 2 , gfx.ScreenHeight / 2 + 160 ) , boxW - 15 , boxH - 15 );
 
-	Color easyCol = Colors::LightGray , mediumCol = Colors::LightGray , hardCol = Colors::LightGray , menuBoxCol = Colors::MakeRGB( 20 , 20 , 20 );
-
-	Box boxEasy = Box( easy , Colors::White , menuBoxCol , Colors::White , "easy" , 4 , 2 );
-	Box boxMedium = Box( medium , Colors::White , menuBoxCol , Colors::White , "medium" , 4 , 2 );
-	Box boxHard = Box( hard , Colors::White , menuBoxCol , Colors::Red , "hard" , 4 , 2 );
-
-	Box boxCreate = Box( create , Colors::White , menuBoxCol , Colors::White , "create" , 3 , 2 );
+	std::map<int , Box> menuBoxes = {
+		{ 0, Box( easy , Colors::White , menuBoxCol , Colors::White , "easy" , 4 , 2 ) },
+		{ 1, Box( medium , Colors::White , menuBoxCol , Colors::White , "medium" , 4 , 2 ) } ,
+		{ 2, Box( hard , Colors::White , menuBoxCol , Colors::Red , "hard" , 4 , 2 ) },  
+		{ 3, Box( create , Colors::White , menuBoxCol , Colors::White , "create" , 3 , 2 ) }
+	};
 
 	bool soundMusicWait = false , soundMusicChange = false;
 
@@ -138,6 +147,9 @@ private:
 	Box boxSfxVol = Box( sfxVolRecVol , soundVolCol );
 	Box boxMusicVol = Box( musicVolRecVol , soundVolCol );
 
+	//boxes for Create screen
+	int num = -1;
+
 	//return box
 	Rect returnRectGame = Rect::fromCenter( Vec2( 745.0f , gfx.ScreenHeight / 2 ) , 50.0f , 15.0f );
  	Box returnBoxGame = Box( returnRectGame , Colors::White, menuBoxCol , Colors::White, "return", 2 , 2);
@@ -149,12 +161,14 @@ private:
 
 	Vec2 mouse;
 
-	bool start = false , spaceClicked = false , menuScreen = true , scoreScreen = false , f = false , brickAnim = true , scoreFlickerAnim = false, createScreen = false;
+	bool start = false , spaceClicked = false , f = false , brickAnim = true , scoreFlickerAnim = false, createScreen = false;
 
 	int powerFreq = 8;
 
 	float timeDraw = 0.0f;
 	float time = 0.0f;
+
+	int maxShots = 0;
 
 	static constexpr float brickWidth = 42.0f;
 	static constexpr float brickHeight = 20.0f;
@@ -188,7 +202,8 @@ private:
 
 	Text text;
 
-	bool song1 = true , song2 = false , song3 = false , song4 = false , play = true;
+	bool play = true;
+
 	//various timers for animations and delays
 	Timer paddleCollision { 15.0f };
 	Timer timerStart { 2.1f };
@@ -203,7 +218,7 @@ private:
 	float blockBricksY;
 	float blockBricksX;
 	int blockBricksCurr = 0;
-	Brick* blockBricks = nullptr;
+	std::vector< Brick > savedBlockBricks;
 
 	//to keep track of current level
 	int currentLevel = 1;
@@ -232,7 +247,7 @@ private:
 	float padY;
 	Vec2 topLeft;
 
-	bool hasBullet = false, hasBalls = false, paddleHasBall = false;
+	bool hasBulletPower = false, hasBalls = false, paddleHasBall = false;
 	float relativeX = 0.0f;
 
 	GameLevel levels;

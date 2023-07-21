@@ -80,14 +80,16 @@ void PowerUp::updateBullets( float dt, const Rect& wall )
 
 Rect PowerUp::getBullets( )
 {
-	if ( powerOn )
+	for ( Bullet& bullet : bullets )
 	{
-		for ( Bullet& bullet : bullets )
-		{
-			return bullet.getRect( );
-		}
+		return bullet.getRect( );
 	}
 	return Rect( NULL , NULL , NULL , NULL );
+}
+
+bool PowerUp::getCollisionWithPaddle( ) const
+{
+	return collisionWithPaddle;
 }
 
 bool PowerUp::shot( Paddle& paddle , const Keyboard& kdb , float dt, bool shoot)
@@ -95,7 +97,7 @@ bool PowerUp::shot( Paddle& paddle , const Keyboard& kdb , float dt, bool shoot)
 	if ( shoot )
 	{
 		frames += dt;
-		if ( powerOn && kdb.KeyIsPressed( VK_SPACE ) && frames >= bulletWait )
+		if ( kdb.KeyIsPressed( VK_SPACE ) && frames >= bulletWait )
 		{
 			frames = 0.0f;
 			bullets.push_back( Bullet( Vec2( paddle.getVec( ).x + 15.0f , paddle.getVec( ).y ) , Vec2( 0 , -500.0f ) ) );
@@ -116,6 +118,11 @@ void PowerUp::update(float dt)
 	if (!destroyed)
 		pos += vel * dt;
 
+}
+
+void PowerUp::setCollisionWithPaddle( bool in )
+{
+	collisionWithPaddle = in;
 }
 
 bool PowerUp::paddleCollision(Paddle& paddle)
@@ -147,16 +154,10 @@ bool PowerUp::bulletExists( )
 		return true;
 }
 
-void PowerUp::turnOn(  )
-{
-	powerOn = true;
-}
-
 PowerUp::powers PowerUp::getPower( )
 {
 	return type;
 }
-
 
 PowerUp::Bullet::Bullet( Vec2 pos , Vec2 vel) : pos( pos ), vel( vel )
 {

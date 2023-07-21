@@ -1,16 +1,19 @@
 #include "Brick.h"
 
-Brick::Brick(const Rect& rect, Color c_, const int health, Type type)
+
+Brick::Brick( const Rect& rect , int x_ , int y_ , Color c_ , const int health , Type type )
 	:
-	rect(rect),
-	health(health),
-	type( type )
+	rect( rect ) ,
+	health( health ) ,
+	type( type ),
+	x( x_ ) ,
+	y( y_ )
 {
 	if ( health == 0 )
 		destroyed = true;
 	c = c_;
 
-	d.SetR( unsigned char(float( c.GetR( ) ) * 0.85f) );
+	d.SetR( unsigned char( float( c.GetR( ) ) * 0.85f ) );
 	d.SetG( unsigned char( float( c.GetG( ) ) * 0.85f ) );
 	d.SetB( unsigned char( float( c.GetB( ) ) * 0.85f ) );
 
@@ -21,17 +24,30 @@ Brick::Brick(const Rect& rect, Color c_, const int health, Type type)
 	
 void Brick::draw(Graphics& gfx) const
 {
-	if (!destroyed)
+	if ( !destroyed )
 	{
 
-		gfx.DrawRect(rect.getExpanded(-padding), c);
-
-		if ( type == Type::extra || type == Type::invinc )
+		if ( type != Type::empty )
 		{
-			gfx.DrawRect( Rect( rect.left + padding , rect.right - padding , rect.top + padding , ( rect.top + padding ) + width + 1) , l );
-			gfx.DrawRect( Rect( rect.left + padding , ( rect.left + padding ) + width + 1, rect.top + padding , rect.bottom - padding ) , l );
-			gfx.DrawRect( Rect( rect.left + padding , rect.right - padding , ( rect.bottom - padding ) - width - 1, ( rect.bottom - padding ) ) , d );
-			gfx.DrawRect( Rect( ( rect.right - padding ) - width - 1 , ( rect.right - padding ) , rect.top + padding , rect.bottom - padding ) , d );
+			
+			gfx.DrawRect( rect.getExpanded( -padding ) , c );
+
+			if ( type == Type::extra || type == Type::invinc )
+			{
+				gfx.DrawRect( Rect( rect.left + padding , rect.right - padding , rect.top + padding , ( rect.top + padding ) + width + 1 ) , l );
+				gfx.DrawRect( Rect( rect.left + padding , ( rect.left + padding ) + width + 1 , rect.top + padding , rect.bottom - padding ) , l );
+				gfx.DrawRect( Rect( rect.left + padding , rect.right - padding , ( rect.bottom - padding ) - width - 1 , ( rect.bottom - padding ) ) , d );
+				gfx.DrawRect( Rect( ( rect.right - padding ) - width - 1 , ( rect.right - padding ) , rect.top + padding , rect.bottom - padding ) , d );
+			}
+
+			if ( hover )
+			{
+				gfx.DrawRect( rect , Colors::MakeRGB( 250 , 250 , 250 ) , 2 );
+			}
+		}
+		else
+		{
+			gfx.DrawRect( rect.getExpanded( -padding ) , c , 1 );
 		}
 
 		if ( hit )
@@ -198,4 +214,45 @@ void Brick::color( float dt )
 		}
 
 	}
+}
+
+int Brick::getX( )
+{
+	return x;
+}
+
+int Brick::getY( )
+{
+	return y;
+}
+
+bool Brick::isHover( Vec2 pos )
+{
+
+	if ( type == Type::empty )
+	{
+		if ( getRect( ).isOverLapping( pos ) )
+		{
+			setColor( Colors::MakeRGB( 180 , 180 , 180 ) );
+			return true;
+		}
+
+		setColor( Colors::MakeRGB( 60 , 60 , 60 ) );
+		return false;
+	}
+	else
+	{
+		if ( getRect( ).isOverLapping( pos ) )
+		{
+			hover = true;
+			return true;
+		}
+		else
+		{
+			hover = false;
+			return false;
+		}
+	}
+	return false;
+
 }

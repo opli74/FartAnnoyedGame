@@ -148,6 +148,16 @@ void Box::setRect( const Rect& in )
 	rect = in;
 }
 
+void Box::setHovered( )
+{
+	hovered = !hovered;
+}
+
+bool Box::checkHovered( )
+{
+	return hovered;
+}
+
 void Box::setTypeFill( bool in )
 {
 	typeFill = in;

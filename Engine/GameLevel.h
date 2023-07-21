@@ -11,9 +11,12 @@
 #include <string>
 #include <algorithm>
 
+
 struct mapHeader
 {
 	int id = 0;
+	int left = -1;
+	int top = -1;
 	int width = 0;
 	int height = 0;
 	std::vector< int > data;
@@ -30,19 +33,19 @@ public:
 		Game,
 		Score,
 		Menu,
+		Create
 	};
 
 	GameLevel( );
 	//set
 
-
 	//get
 	bool isCompleted( std::vector< Brick >& bricks ) const;
-	std::vector< std::vector<int> > loadTiles( GameLevel::Type type , int level ) const;
-	std::tuple<int , int> getDimensions( GameLevel::Type type , int level ) const;
+	std::vector< std::vector<int> > loadTiles( GameLevel::Type type , int level , bool zeroes = false ) const;
+	std::tuple<int , int> getDimensions( GameLevel::Type type , int level , bool zeroes = false ) const;
 
 private:
-	std::vector< std::vector<int> > loadTo2Dvec( const mapHeader& level ) const;
+	std::vector< std::vector<int> > loadTo2Dvec( const mapHeader& level, bool zeroes ) const;
 
 
 private:

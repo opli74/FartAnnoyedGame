@@ -15,15 +15,10 @@ public:
 	Box( const Rect& rec , const Color& fill_c , const Color& txtCol , const std::string& str , int size );
 	Box( const Rect& rec ,  const Color& c ) ;
 
-	void draw( Graphics& gfx ) const;
-	void draw( Graphics& gfx , bool center );
-
-	bool isHover( Rect& rect);
-	bool isHover( Vec2& pos );
-
+	//set
 	void setTextCol( const Color& in );
 	void setTextSize( int size );
-	void setText( const std::string& in);
+	void setText( const std::string& in );
 
 	void setBorder( const Color& in );
 	void setFill( const Color& in );
@@ -33,20 +28,33 @@ public:
 
 	void setRect( const Rect& in );
 
+	void setHovered( );
+
+	//get
+	void draw( Graphics& gfx ) const;
+	void draw( Graphics& gfx , bool center );
+
+	bool isHover( Rect& rect);
+	bool isHover( Vec2& pos );
+
+	bool checkHovered( );
+
 	bool getIsHover( ) const;
 	Rect getRect( ) const;
 
 private:
-	int textSize = 4;
-	Color textCol = Colors::White;
-	std::string string;
-	Vec2 center;
-	bool hover , strEmpty = true;
-	Color border , fill;
-	Rect rect;
-	int borderWidth;
-	bool typeFill;
 	Text text;
+	Color border , fill, textCol = Colors::White;
+	Rect rect;
+	Vec2 center;
+
+	std::string string;
+
+	int textSize = 4, borderWidth;
+
+	bool hover , strEmpty = true, hovered = true, typeFill;
+	
+	
 
 };
 

@@ -84,7 +84,6 @@ void Game::UpdateModel( float dt )
 
 	mouse = Vec2( wnd.mouse.GetPosX( ) , wnd.mouse.GetPosY( ) );
 
-	//----------------------------MenuScreen-------------------------//
 	switch ( state )
 	{
 		case GameState::GAME_MENU:
@@ -119,92 +118,28 @@ void Game::UpdateModel( float dt )
 			for ( auto& [key, box] : menuBoxes )
 			{
 				playSoundOnce = true;
-				if ( box.isHover( mouse ))
+				if (box.isHover(mouse))
 				{
-					
-					if ( wnd.mouse.LeftIsPressed( ) && menuScreenWait.checkTime( ) )
+					if (wnd.mouse.LeftIsPressed() && menuScreenWait.checkTime())
 					{
-						soundMusic.StopAll( );
-						playSound( soundChange , L"Sounds\\screenChange.wav" , soundEffectVol );
-						
+						soundMusic.StopAll();
+						playSound(soundChange, L"Sounds\\screenChange.wav", soundEffectVol);
 
-						if ( key < 3 )
+						if ( key < (int)GameMenuOption::Create )
 						{
-							state = GameState::GAME_ACTIVE;
-							levelChange( levels.loadTiles( GameLevel::Type::Game , currentLevel ) , levels.getDimensions( GameLevel::Type::Game , currentLevel ) );
-
-							switch ( key )
-							{
-								case 0:
-								{
-									powerFreq = 5;
-									G_BALL_SPEED = 375.0f;
-									break;
-								}
-								case 1:
-								{
-									powerFreq = 6;
-									G_BALL_SPEED = 465.0f;
-									break;
-								}
-								case 2:
-								{
-									powerFreq = 8;
-									G_BALL_SPEED = 555.0f;
-									break;
-								}
-							}
-							balls[ 0 ].update( dt );
-							paddle.setSpeed( );
+							handleGameMenuSelection( (GameMenuOption)key, dt );
 						}
 						else
 						{
-							state = GameState::GAME_CREATE;
-							levelChange( levels.loadTiles( GameLevel::Type::Create , 4 , true ) , levels.getDimensions( GameLevel::Type::Create , 4, true ) , true );
+							handleCreateMenuSelection();
 						}
 					}
 
-					if ( box.checkHovered( ) )
-					{
-						box.setFill( Colors::White );
-						box.setBorder( Colors::Red );
-						box.setTextCol( Colors::Black );
-
-						if ( key < 3 ) { box.setTextSize( 5 ); } else { box.setTextSize( 4 ); }
-						
-
-						playSound( soundPlay , L"Sounds\\button.wav" , soundEffectVol );
-
-						box.setHovered( );
-					}
+					handleHoveredBox(box, (GameMenuOption)key);
 				}
 				else
 				{
-					if ( !box.checkHovered( ) )
-					{
-						box.setHovered( );
-
-						if ( key == 2 )
-						{
-							box.setFill( menuBoxCol );
-							box.setBorder( Colors::White );
-							box.setTextCol( Colors::Red );
-							box.setTextSize( 4 );
-							break;
-						}
-
-						box.setFill( menuBoxCol );
-						box.setBorder( Colors::White );
-						box.setTextCol( Colors::White );
-						if ( key < 3 )
-						{
-							box.setTextSize( 4 );
-						}
-						else
-						{
-							box.setTextSize( 3 );
-						}
-					}
+					handleUnhoveredBox(box, (GameMenuOption)key);
 				}
 			}
 		
@@ -327,6 +262,10 @@ void Game::UpdateModel( float dt )
 					soundChange.StopAll( );
 					menuScreenWait.reset( );
 					play = true;
+
+					score = 0;
+					lives = 6;
+					time = 0;
 				}
 
 				if ( !returnHover )
@@ -471,6 +410,9 @@ void Game::UpdateModel( float dt )
 					timerFlickerAnim.reset( );
 					scoreFlickerAnim = false;
 					spaceClicked = false;
+					score = 0;
+					lives = 6;
+					time = 0;
 
 					playSound( soundMusic , L"Sounds\\musicTitle.wav" , musicVol , 0.0f , 34.0f );
 					soundChange.StopAll( );
@@ -672,9 +614,10 @@ void Game::UpdateModel( float dt )
 					}
 				}
 
-				int i = 0;
-				for ( PowerUp& power : powers )
+				for (size_t powerIndex = 0; powerIndex < powers.size(); powerIndex++)
 				{
+					PowerUp& power = powers[powerIndex];
+
 					if ( spaceClicked )
 						power.update( dt );
 
@@ -685,99 +628,45 @@ void Game::UpdateModel( float dt )
 							score += 80;
 							case PowerUp::powers::length:
 							{
-								playSound( soundPowerUp , L"Sounds\\arklengthen.wav" , soundEffectVol );
-								paddle.lengthPwrUp( );
-								offsetMaxMax = ( ( paddle.getRect( ).right - paddle.getRect( ).left ) / 2 ) - 15.0f;
-								offsetMinMax = -offsetMaxMax;
+								handleLengthPowerUp(paddle);
 								break;
 							}
 							case PowerUp::powers::bullet:
 							{
-								if ( !hasBulletPower )
-								{
-									power.setCollisionWithPaddle( true );
-									shotCount += 8;
-									hasBulletPower = true;
-								}
-								else
-								{
-									power.setCollisionWithPaddle( true );
-									shotCount += 8;
-									powers.erase( powers.begin( ) + i );
-								}
+								handleBulletPowerUp(power, powerIndex);
 								break;
 							}
 							case PowerUp::powers::balls:
 							{
-								playSound( soundPowerUp , L"Sounds\\arkpower.wav" , soundEffectVol );
-								int tempBalls = currBalls;
-								currBalls *= 2;
-								for ( int i = 0; i < tempBalls; i++ )
-								{
-									for ( int g = 0; g < 1; g++ )
-									{
-										float offsetX = getOffset( -100.0f , -275.0f , 100.0f , 275.0f );
-										float offsetY = getOffset( -100.0f , -275.0f , 100.0f , 275.0f );
-										balls.push_back( Ball( balls[ i ].getPosition( ) , Vec2( balls[ i ].getVelocity( ).x + offsetX , balls[ i ].getVelocity( ).y + offsetY ) ) );
-									}
-								}
+								handleBallsPowerUp();
 								break;
 							}
 							case PowerUp::powers::block:
 							{
-								playSound( soundPowerUp , L"Sounds\\arkpower.wav" , soundEffectVol );
-								if ( blockBricksCurr < 14 )
-								{
-									Brick blockBrick = Brick( Rect( Vec2( blockBricksX + ( brickWidth * blockBricksCurr ) , blockBricksY ) , brickWidth , brickHeight ) , blockBricksCurr, 0 , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc );
-									bricks.push_back( blockBrick );
-									savedBlockBricks.push_back( blockBrick );
-									blockBricksCurr++;
-								}
+								handleBlockPowerUp();
 								break;
 							}
 
 							case PowerUp::powers::bomb:
 							{
-								score -= 150;
-								lives--;
+								handleBombPowerUp();
 								break;
 							}
 						}
+						powers.erase(powers.begin() + powerIndex);
+						powerIndex--;
 					}
 
 					if ( power.getPower( ) == PowerUp::powers::bullet )
 					{
-						if ( power.getCollisionWithPaddle( ) )
-						{
-							if ( !power.bulletExists( ) && shotCount == 0 )
-							{
-								for ( unsigned int iter = 0 , e = powers.size() - 1; iter != e; iter++ )
-								{
-									if ( powers[ iter ].getPower( ) == PowerUp::powers::bullet && powers[ iter ].getCollisionWithPaddle( ) )
-									{
-										powers[ iter ].bullets.clear( );
-										powers.erase( powers.begin( ) + iter );
-									}
-								}
-								hasBulletPower = false;
-							}
-							else if ( shotCount > 0 )
-							{
-								if ( power.shot( paddle , wnd.kbd , dt , spaceClicked ) )
-								{
-									playSound( soundPlay , L"Sounds\\arkbullet.wav" , soundEffectVol );
-									shotCount--;
-								}
-							}
-							power.updateBullets( dt , wall.getWall( ) );
-						}
+						handleBulletPowerUpBehavior(power, dt);
 					}
 
 					if ( power.wallCollision( wall.getWall( ) ) )
 					{
-						powers.erase( powers.begin( ) + i );
+						powers.erase( powers.begin( ) + powerIndex);
+						powerIndex--;
 					}
-					i++;
 				}
 
 				time += dt;
@@ -818,7 +707,7 @@ void Game::UpdateModel( float dt )
 				}
 			}
 
-			for ( unsigned int i = 0 , e = bricks.size( ); i != e; i++ )
+			for ( size_t i = 0 , e = bricks.size( ); i != e; i++ )
 			{
 				if ( bricks[ i ].isHover( mouse ) )
 				{
@@ -866,6 +755,190 @@ void Game::UpdateModel( float dt )
 				}
 			}
 			break;
+		}
+	}
+}
+
+//GAME MENU
+void Game::handleGameMenuSelection(GameMenuOption option, float dt)
+{
+	state = GameState::GAME_ACTIVE;
+	levelChange(levels.loadTiles(GameLevel::Type::Game, currentLevel), levels.getDimensions(GameLevel::Type::Game, currentLevel));
+
+	switch (option)
+	{
+	case GameMenuOption::Easy:
+		configureGameParameters(5, 375.0f);
+		break;
+	case GameMenuOption::Medium:
+		configureGameParameters(6, 465.0f);
+		break;
+	case GameMenuOption::Hard:
+		configureGameParameters(8, 555.0f);
+		break;
+	default:
+		break;
+	}
+
+	balls[0].update(dt);
+	paddle.setSpeed();
+}
+
+void Game::handleCreateMenuSelection()
+{
+	state = GameState::GAME_CREATE;
+	levelChange(levels.loadTiles(GameLevel::Type::Create, 4, true), levels.getDimensions(GameLevel::Type::Create, 4, true), true);
+}
+
+void Game::handleHoveredBox( Box& box, GameMenuOption option)
+{
+	if (box.checkHovered())
+	{
+		box.setFill(Colors::White);
+		box.setBorder(Colors::Red);
+		box.setTextCol(Colors::Black);
+
+		if ((int)option < (int)GameMenuOption::Create)
+		{
+			box.setTextSize(5);
+		}
+		else
+		{
+			box.setTextSize(4);
+		}
+
+		playSound(soundPlay, L"Sounds\\button.wav", soundEffectVol);
+
+		box.setHovered();
+	}
+
+}
+
+void Game::handleUnhoveredBox(Box& box, GameMenuOption option)
+{
+	if (!box.checkHovered())
+	{
+		box.setHovered();
+
+		if (option == GameMenuOption::Hard)
+		{
+			box.setFill(menuBoxCol);
+			box.setBorder(Colors::White);
+			box.setTextCol(Colors::Red);
+			box.setTextSize(4);
+			return;
+		}
+
+		box.setFill(menuBoxCol);
+		box.setBorder(Colors::White);
+		box.setTextCol(Colors::White);
+
+		if (option < GameMenuOption::Create)
+		{
+			box.setTextSize(4);
+		}
+		else
+		{
+			box.setTextSize(3);
+		}
+	}
+}
+
+void Game::configureGameParameters(int frequency, float ballSpeed)
+{
+	powerFreq = frequency;
+	G_BALL_SPEED = ballSpeed;
+}
+
+
+//GAME ACTIVE
+void Game::handleLengthPowerUp(Paddle& paddle)
+{
+	playSound(soundPowerUp, L"Sounds\\arklengthen.wav", soundEffectVol);
+	paddle.lengthPwrUp();
+	offsetMaxMax = (paddle.getRect().right - paddle.getRect().left) / 2.0f - 15.0f;
+	offsetMinMax = -offsetMaxMax;
+}
+
+void Game::handleBulletPowerUp(PowerUp& power, size_t powerIndex)
+{
+	playSound(soundPowerUp, L"Sounds\\arkbullet.wav", soundEffectVol);
+
+	if (!hasBulletPower)
+	{
+		power.setCollisionWithPaddle(true);
+		shotCount += 8;
+		hasBulletPower = true;
+	}
+	else
+	{
+		power.setCollisionWithPaddle(true);
+		shotCount += 8;
+		// Assuming powers vector index 'i' is already known here
+		powers.erase(powers.begin() + powerIndex);
+	}
+}
+
+void Game::handleBallsPowerUp()
+{
+	playSound(soundPowerUp, L"Sounds\\arkpower.wav", soundEffectVol);
+	int tempBalls = currBalls;
+	currBalls *= 2;
+
+	for (int i = 0; i < tempBalls; ++i)
+	{
+		for (int g = 0; g < 1; ++g)
+		{
+			float offsetX = getOffset(-100.0f, -275.0f, 100.0f, 275.0f);
+			float offsetY = getOffset(-100.0f, -275.0f, 100.0f, 275.0f);
+			balls.push_back(Ball(balls[i].getPosition(), Vec2(balls[i].getVelocity().x + offsetX, balls[i].getVelocity().y + offsetY)));
+		}
+	}
+}
+
+void Game::handleBlockPowerUp()
+{
+	playSound(soundPowerUp, L"Sounds\\arkpower.wav", soundEffectVol);
+
+	if (blockBricksCurr < 14)
+	{
+		Brick blockBrick = Brick(Rect(Vec2(blockBricksX + (brickWidth * blockBricksCurr), blockBricksY), brickWidth, brickHeight),
+			blockBricksCurr, 0, Colors::MakeRGB(255, 137, 0), 1, Brick::Type::invinc);
+		bricks.push_back(blockBrick);
+		savedBlockBricks.push_back(blockBrick);
+		blockBricksCurr++;
+	}
+}
+
+void Game::handleBombPowerUp()
+{
+	score -= 150;
+	lives--;
+}
+
+void Game::handleBulletPowerUpBehavior(PowerUp& power, float dt )
+{
+	if (power.getCollisionWithPaddle())
+	{
+		if (!power.bulletExists() && shotCount == 0)
+		{
+			for ( size_t iter = 0, e = powers.size() - 1; iter != e; ++iter)
+			{
+				if (powers[iter].getPower() == PowerUp::powers::bullet && powers[iter].getCollisionWithPaddle())
+				{
+					powers[iter].bullets.clear();
+					powers.erase(powers.begin() + iter);
+				}
+			}
+			hasBulletPower = false;
+		}
+		else if (shotCount > 0)
+		{
+			if (power.shot(paddle, wnd.kbd, dt, spaceClicked))
+			{
+				playSound(soundPlay, L"Sounds\\arkbullet.wav", soundEffectVol);
+				shotCount--;
+			}
 		}
 	}
 }
@@ -1018,7 +1091,9 @@ void Game::UpdateModel( float dt )
 //	}
 //}
 
-void Game::levelChange( const std::vector< std::vector<int> >& gameBricks , const std::tuple<int , int>& dimensions , bool drawSpaceBricks )
+
+
+void Game::initializeLevel(const std::tuple<int, int>& dimensions)
 {
 	destroyed = 0;
 	nonBrickAmount = 0;
@@ -1032,20 +1107,28 @@ void Game::levelChange( const std::vector< std::vector<int> >& gameBricks , cons
 	std::tie(nBrickRows, nBrickCols) = dimensions;
 	nBricks = nBrickCols * nBrickRows;
 
-	offset = getOffset( );
-	balls[ 0 ].setPosition( Vec2( 400.0f + offset , PADDLE_Y - 12.0f ) );
-	balls[ 0 ].setDirection( Vec2( 0.0f , 5.0f ) );
-	paddle.setPos( Vec2( 400.0f , PADDLE_Y ) );
-	paddle.lengthPwrUpReset( );
+	offset = getOffset();
+
 	brickAnim = true;
 
-	timerStart.setState( false );
-	timerStart.reset( );
+	timerStart.setState(false);
+	timerStart.reset();
 	spaceClicked = false;
 
-	balls.erase( balls.begin( ) + 1 , balls.end( ) );
+	balls.erase(balls.begin() + 1, balls.end());
 	currBalls = 1;
+}
 
+void Game::resetObjectsPositions()
+{
+	balls[0].setPosition(Vec2(400.0f + offset, PADDLE_Y - 12.0f));
+	balls[0].setDirection(Vec2(0.0f, 5.0f));
+	paddle.setPos(Vec2(400.0f, PADDLE_Y));
+	paddle.lengthPwrUpReset();
+}
+
+void Game::initializeWallPadding()
+{
 	padX = ((wall.getWall().right - wall.getWall().left) - (nBrickRows * brickWidth)) / 2;
 	padY = ((wall.getWall().bottom - wall.getWall().top) - (nBrickCols * brickHeight)) / 4;
 
@@ -1054,38 +1137,41 @@ void Game::levelChange( const std::vector< std::vector<int> >& gameBricks , cons
 		padY -= ((nBrickCols * brickHeight) + padY) - 340.0f;
 	}
 	topLeft = Vec2((wall.getWall().left + padX), (wall.getWall().top + padY));
+}
 
-	bricks.clear( );
-	for ( PowerUp& e : powers )
+void Game::initializeBricks(const std::vector<std::vector<int>>& gameBricks, bool drawSpaceBricks)
+{
+	bricks.clear();
+	for (PowerUp& e : powers)
 	{
-		e.bullets.clear( );
+		e.bullets.clear();
 	}
-	powers.clear( );
+	powers.clear();
 	hasBulletPower = false;
 
-	int y = 0 , x = 0;
-	for ( auto& row : gameBricks )
+	int y = 0, x = 0;
+	for (auto& row : gameBricks)
 	{
-		for ( auto& col : row )
+		for (auto& col : row)
 		{
-			if ( col > 0 && col < 6 )
+			if (col > 0 && col < 6)
 			{
-				bricks.push_back( Brick( Rect( topLeft + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , x, y , brickColors[ ( col ) - 1 ] , 1 , Brick::Type::normal ) );
+				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, brickColors[(col)-1], 1, Brick::Type::normal));
 			}
-			else if ( col == 6 )
+			else if (col == 6)
 			{
-				bricks.push_back( Brick( Rect( topLeft + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , x , y , Colors::MakeRGB( 255 , 137 , 0 ) , 1 , Brick::Type::invinc ) );
+				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::MakeRGB(255, 137, 0), 1, Brick::Type::invinc));
 				indestructable++;
 			}
-			else if ( col == 7 )
+			else if (col == 7)
 			{
-				bricks.push_back( Brick( Rect( topLeft + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , x , y , Colors::Gray , 2 , Brick::Type::extra ) );
+				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::Gray, 2, Brick::Type::extra));
 			}
 			else
 			{
-				if ( drawSpaceBricks )
+				if (drawSpaceBricks)
 				{
-					bricks.push_back( Brick( Rect( topLeft + Vec2( ( x * brickWidth ) , ( y * brickHeight ) ) , brickWidth , brickHeight ) , x , y , Colors::MakeRGB( 60, 60, 60 ) , 1 , Brick::Type::empty ) );
+					bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::MakeRGB(60, 60, 60), 1, Brick::Type::empty));
 				}
 				nonBrickAmount++;
 			}
@@ -1094,6 +1180,21 @@ void Game::levelChange( const std::vector< std::vector<int> >& gameBricks , cons
 		y++;
 		x = 0;
 	}
+}
+
+void Game::levelChange( const std::vector< std::vector<int> >& gameBricks , const std::tuple<int , int>& dimensions , bool drawSpaceBricks )
+{
+	// Common initialization
+	initializeLevel(dimensions);
+
+	// Reset object positions
+	resetObjectsPositions();
+
+	// Initialize wall padding
+	initializeWallPadding();
+
+	// Create bricks
+	initializeBricks(gameBricks, drawSpaceBricks);
 }
 
 //stops all sound and plays the file entered
@@ -1131,69 +1232,58 @@ float Game::getOffset( float minMin, float minMax, float maxMin, float maxMax )
 	return -rand;
 }
 
-std::string Game::removeTail( std::string& str )
+std::string Game::removeTail(std::string& str)
 {
-	std::string str_ = str;
-	int index = 0;
+	char decimalSeparator = '.';
+	size_t index = str.find(decimalSeparator);
 
-	for ( int i = 0; i < str.size( ) - 1; i++ )
+	if (index != std::string::npos)
 	{
-		if ( str[ i ] == '.' )
-		{
-			index = i;
-			break;
-		}
+		// Found the decimal separator, remove the tail
+		str.erase(str.begin() + index + 2, str.end());
 	}
+	// else: Decimal separator not found, do nothing or handle as appropriate
 
-	str_.erase( str_.begin( ) + index + 2 , str_.end( ) );
-
-	return str_;
+	return str;
 }
 
 //draws in-game timer with an actual timer layout, i.e: minutes:seconds:microseconds
 void Game::drawTimeFormat( float time , Vec2 pos, int size )
 {
-	std::string m = std::to_string(int( time / 60 ) % 60);
-	std::string ss = std::to_string( int( time ) % 60 );
-	std::string ms = std::to_string( int( time * 100 ) % 100 );
+	const int minutes = static_cast<int>(time / 60) % 60;
+	const int seconds = static_cast<int>(time) % 60;
+	const int milliseconds = static_cast<int>(time * 100) % 100;
 
-	if ( ( int( time / 60 ) % 60 ) < 10 )
-		m = "0" + m;
+	const std::string minutesStr = (minutes < 10) ? "0" + std::to_string(minutes) : std::to_string(minutes);
+	const std::string secondsStr = (seconds < 10) ? "0" + std::to_string(seconds) : std::to_string(seconds);
+	const std::string millisecondsStr = (milliseconds < 10) ? "0" + std::to_string(milliseconds) : std::to_string(milliseconds);
 
-	if ( int( time ) % 60 < 10)
-		ss = "0" + ss;
+	const std::string formattedTime = minutesStr + ":" + secondsStr + ":" + millisecondsStr;
 
-	if ( int( time * 100 ) % 100 < 10 )
-		ms = "0" + ms;
-
-	text.drawText( gfx ,  m + ":" + ss + ":" + ms, pos , Colors::White , size , true);
-
+	text.drawText(gfx, formattedTime, pos, Colors::White, size, true);
 }
 
 //checks collision for the passed brick, is used to ensure that only one brick is destroyed per frame
-void Game::checkCollision( Brick& brick, int i, bool& collisionHappened , float& collisionDistSq , int& collisionIndex , int& ballIndex, float dt )
+void Game::checkCollision( Brick& brick, int brickIndex, bool& collisionHappened , float& collisionDistSq , int& collisionIndex , int& ballIndex, float dt )
 {
 	brick.color( dt );
+	const Vec2 brickCenter = brick.getRect().getCenter();
 	for ( int b = 0; b < currBalls; b++ )
 	{
 		if ( brick.isCollidingBall( balls[ b ] ) )
 		{
-			const float newCollisionDistSq = ( balls[ b ].getPosition( ) - brick.getRect( ).getCenter( ) ).GetLengthSq( );
-			if ( collisionHappened )
-			{
-				if ( newCollisionDistSq < collisionDistSq )
-				{
-					collisionDistSq = newCollisionDistSq;
-					collisionIndex = i;
-					ballIndex = b;
-				}
-			}
-			else
+			const Vec2 ballPosition = balls[b].getPosition();
+			const float newCollisionDistSq = (ballPosition - brickCenter ).GetLengthSq( );
+
+			if (!collisionHappened || newCollisionDistSq < collisionDistSq)
 			{
 				collisionDistSq = newCollisionDistSq;
-				collisionIndex = i;
-				collisionHappened = true;
+				collisionIndex = brickIndex;
 				ballIndex = b;
+				collisionHappened = true;
+
+				// Early return if collision is found
+				return;
 			}
 		}
 	}

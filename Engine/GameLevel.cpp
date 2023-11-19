@@ -47,38 +47,38 @@ bool GameLevel::isCompleted( std::vector< Brick >& bricks ) const
 
 std::vector<std::vector<int>> GameLevel::loadTiles( GameLevel::Type type, int level , bool zeroes ) const
 {
-    switch ( type )
+    switch (type)
     {
         case Type::Create:
         case Type::Game:
         {
-            for ( const mapHeader& e : gameLevelData )
+            for (const mapHeader& e : gameLevelData)
             {
-                if ( e.id == level )
+                if (e.id == level)
                 {
-                    return loadTo2Dvec( e, zeroes );
+                    return loadTo2Dvec(e, zeroes);
                 }
             }
             break;
         }
         case Type::Score:
         {
-            for ( const mapHeader& e : scoreData )
+            for (const mapHeader& e : scoreData)
             {
-                if ( e.id == level )
+                if (e.id == level)
                 {
-                    return loadTo2Dvec( e , zeroes);
+                    return loadTo2Dvec(e, zeroes);
                 }
             }
             break;
         }
         case Type::Menu:
         {
-            for ( const mapHeader& e : menuData )
+            for (const mapHeader& e : menuData)
             {
-                if ( e.id == level )
+                if (e.id == level)
                 {
-                    return loadTo2Dvec( e , zeroes );
+                    return loadTo2Dvec(e, zeroes);
                 }
             }
             break;

@@ -20,13 +20,11 @@ void Paddle::draw(Graphics& gfx)
 	}
 	else
 	{
-		if ( amount <= int(diff) )
+		if ( amount <= int(diff) && 
+			 frames >= 0.03f		)
 		{
-			if ( frames >= 0.03f )
-			{
-				amount++;
-				frames = 0;
-			}
+			amount++;
+			frames = 0;
 		}
 		SpriteCodex::DrawPaddle( pos , gfx , amount );
 	}
@@ -34,72 +32,127 @@ void Paddle::draw(Graphics& gfx)
 
 bool Paddle::ballCollision(Ball& ball)
 {
+
+
 	if (getRect().isOverLapping(ball.getRect()))
 	{
-		Rect rect = getRect();
+		Rect paddleRect = getRect();
+		Rect ballRect = ball.getRect();
 		Vec2 ballCurrPos = ball.getPosition();
-		Vec2 ballPos = Vec2(0, 0);
+		Vec2 ballPosAdjustment = { 0.0f, 0.0f };
 
-		float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballCurrPos.y - pos.y);
-		float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballCurrPos.x - pos.x);
+		float wy = ((ballRect.right - ballRect.left) + (paddleRect.right - paddleRect.left)) * (ballCurrPos.y - pos.y);
+		float hx = ((ballRect.bottom - ballRect.top) + (paddleRect.bottom - paddleRect.top)) * (ballCurrPos.x - pos.x);
 
 		if (wy > hx)
 		{
 			if (wy < -hx)
 			{
-				//left
-				ballPos.x -= ball.getRect().right - rect.left;
+				// Left side collision
+				ballPosAdjustment.x -= ballRect.right - paddleRect.left;
 				ball.reboundX(false);
-				if (ball.getVelocity().y > 0.0f)
-					ballPos.y += rect.bottom - ball.getRect().top;
-				else
-					ballPos.y -= ball.getRect().bottom - rect.top;
+				ballPosAdjustment.y += (ball.getVelocity().y > 0.0f) ? (paddleRect.bottom - ballRect.top) : -(ballRect.bottom - paddleRect.top);
 			}
 			else
 			{
-				ballPos.y -= ball.getRect( ).top - rect.bottom;
-				ball.reboundY( true );
+				// Top side collision
+				ballPosAdjustment.y -= ballRect.top - paddleRect.bottom;
+				ball.reboundY(true);
 			}
 		}
 		else
 		{
 			if (wy > -hx)
 			{
-				//right
-				ballPos.x += rect.right - ball.getRect().left;
+				// Right side collision
+				ballPosAdjustment.x += paddleRect.right - ballRect.left;
 				ball.reboundX(true);
-				if (ball.getVelocity().y > 0.0f)
-					ballPos.y += rect.bottom - ball.getRect().top;
-				else
-					ballPos.y -= ball.getRect().bottom - rect.top;
+				ballPosAdjustment.y += (ball.getVelocity().y > 0.0f) ? (paddleRect.bottom - ballRect.top) : -(ballRect.bottom - paddleRect.top);
 			}
 			else
 			{
-				//top
-				ballPos.y -= ball.getRect().bottom - rect.top;
-				float relativeX = 0.0f;
-				if ( incLength )
-					relativeX = ( ballCurrPos.x - pos.x ) / ( longHalfWidth );
-				else
-					relativeX = ( ballCurrPos.x - pos.x ) / ( halfWidth );
+				// Bottom side collision (45 degrees bounce)
+				ballPosAdjustment.y -= ballRect.bottom - paddleRect.top;
 
-				//45 degrees
-				float bounceAngle = relativeX * 0.7853982;
+				// Calculate relative X position on the paddle
+				float relativeX = incLength ? ((ballCurrPos.x - pos.x) / longHalfWidth) : ((ballCurrPos.x - pos.x) / halfWidth);
 
+				// Calculate bounce angle based on relative X position
+				float bounceAngle = relativeX * 0.7853982; // 45 degrees in radians
+
+				// Set ball direction based on bounce angle
 				ball.setDirection(Vec2(sinf(bounceAngle), -cosf(bounceAngle)).Normalize() * G_BALL_SPEED);
-				test = true;
+				return true; // Collision handled, exit early
 			}
 		}
-		ballCurrPos += ballPos;
+
+		ballCurrPos += ballPosAdjustment;
 		ball.setPosition(ballCurrPos);
-		if (test)
-		{
-			test = false;
-			return true;
-		}
-		
 	}
-	return false;
+
+	return false; // No collision
+
+	//if (getRect().isOverLapping(ball.getRect()))
+	//{
+	//	Rect rect = getRect();
+	//	Vec2 ballCurrPos = ball.getPosition();
+	//	Vec2 ballPos = Vec2(0, 0);
+
+	//	float wy = ((ball.getRect().right - ball.getRect().left) + (rect.right - rect.left)) * (ballCurrPos.y - pos.y);
+	//	float hx = ((ball.getRect().bottom - ball.getRect().top) + (rect.bottom - rect.top)) * (ballCurrPos.x - pos.x);
+
+	//	if (wy > hx)
+	//	{
+	//		if (wy < -hx)
+	//		{
+	//			//left
+	//			ballPos.x -= ball.getRect().right - rect.left;
+	//			ball.reboundX(false);
+	//			if (ball.getVelocity().y > 0.0f)
+	//				ballPos.y += rect.bottom - ball.getRect().top;
+	//			else
+	//				ballPos.y -= ball.getRect().bottom - rect.top;
+	//		}
+	//		else
+	//		{
+	//			ballPos.y -= ball.getRect( ).top - rect.bottom;
+	//			ball.reboundY( true );
+	//		}
+	//	}
+	//	else
+	//	{
+	//		if (wy > -hx)
+	//		{
+	//			//right
+	//			ballPos.x += rect.right - ball.getRect().left;
+	//			ball.reboundX(true);
+	//			if (ball.getVelocity().y > 0.0f)
+	//				ballPos.y += rect.bottom - ball.getRect().top;
+	//			else
+	//				ballPos.y -= ball.getRect().bottom - rect.top;
+	//		}
+	//		else
+	//		{
+	//			//top
+	//			ballPos.y -= ball.getRect().bottom - rect.top;
+	//			float relativeX = 0.0f;
+	//			if ( incLength )
+	//				relativeX = ( ballCurrPos.x - pos.x ) / ( longHalfWidth );
+	//			else
+	//				relativeX = ( ballCurrPos.x - pos.x ) / ( halfWidth );
+
+	//			//45 degrees
+	//			float bounceAngle = relativeX * 0.7853982;
+
+	//			ball.setDirection(Vec2(sinf(bounceAngle), -cosf(bounceAngle)).Normalize() * G_BALL_SPEED);
+	//			test = true;
+	//		}
+	//	}
+	//	ballCurrPos += ballPos;
+	//	ball.setPosition(ballCurrPos);
+	//	
+	//}
+	//return false;
 }
 
 void Paddle::wallCollision(const Rect& wall)

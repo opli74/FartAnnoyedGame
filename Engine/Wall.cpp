@@ -88,21 +88,14 @@ void Wall::drawLines(Graphics& gfx) const
     {
         for (int x = 0; x < cellX; x++)
         {
-            if (y % 2 == 0)
+            const Vec2 cellPosition = topLeft + Vec2(float(x * cellW), float(y * cellH));
+
+            if ((y % 2 == 0 && x % 2 == 0) || (y % 2 != 0 && x % 2 != 0))
             {
-                if (x % 2 == 0)
-                {
-                    gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), cellW, 1), l);
-                    gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), 1, cellH), d);
-                }
-            }
-            else
-            {
-                if (x % 2 != 0)
-                {
-                    gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), cellW , 1), l);
-                    gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), 1, cellH), d);
-                }
+                // Draw horizontal line
+                gfx.DrawRect(Rect(cellPosition, cellW, 1), l);
+                // Draw vertical line
+                gfx.DrawRect(Rect(cellPosition, 1, cellH), d);
             }
         }
     }
@@ -114,24 +107,12 @@ void Wall::drawBackground(Graphics& gfx) const
     {
         for (int x = 0; x < cellX; x++)
         {
-            if (y % 2 == 0)
-                if (x % 2 == 0)
-                {
-                    gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), cellW, cellH), greyOne);
-                }
+            const Vec2 cellPosition = topLeft + Vec2(float(x * cellW), float(y * cellH));
+            const Color cellColor = (y % 2 == 0) ? ((x % 2 == 0) ? greyOne : greyTwo) : ((x % 2 != 0) ? greyOne : greyTwo);
 
-                else
-                    gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), cellW, cellH), greyTwo);
-            else
-                if (x % 2 != 0)
-                {
-                    gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), cellW, cellH), greyOne);
-                }
-
-                else
-                    gfx.DrawRect(Rect(topLeft + Vec2(float(x * cellW), float(y * cellH)), cellW, cellH), greyTwo);
-
+            gfx.DrawRect(Rect(cellPosition, cellW, cellH), cellColor);
         }
     }
+
     drawLines(gfx);
 }

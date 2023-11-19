@@ -201,7 +201,7 @@ void PowerUp::Bullet::wallCollision( const Rect& wall )
 
 bool PowerUp::Bullet::brickCollision( Brick& brick )
 {
-	if ( !toBeDestroyed && getRect( ).isOverLapping( brick.getRect( ) ) && !brick.getDestroyed() )
+	if ( !toBeDestroyed && !getRect( ).isOverLapping( brick.getRect( ) ) && !brick.getDestroyed() )
 	{
 		brick.collision( );
 		toBeDestroyed = true;

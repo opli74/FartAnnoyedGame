@@ -150,7 +150,6 @@
     <ClInclude Include="FrameTimer.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Graphics.h" />
-    <ClInclude Include="GetRandom.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="Includes.h" />
     <ClInclude Include="Keyboard.h" />

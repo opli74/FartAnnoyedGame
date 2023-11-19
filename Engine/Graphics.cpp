@@ -270,7 +270,8 @@ void Graphics::EndFrame()
 	// perform the copy line-by-line
 	for( size_t y = 0u; y < Graphics::ScreenHeight; y++ )
 	{
-		memcpy( &pDst[ y * dstPitch ],&pSysBuffer[y * srcPitch],rowBytes );
+		/*memcpy( &pDst[ y * dstPitch ],&pSysBuffer[y * srcPitch],rowBytes );*/
+		std::copy(pSysBuffer + y * srcPitch, pSysBuffer + (y + 1) * srcPitch, pDst + y * dstPitch);
 	}
 	// release the adapter memory
 	pImmediateContext->Unmap( pSysBufferTexture.Get(),0u );
@@ -304,7 +305,8 @@ void Graphics::EndFrame()
 void Graphics::BeginFrame()
 {
 	// clear the sysbuffer
-	memset( pSysBuffer,0u,sizeof( Color ) * Graphics::ScreenHeight * Graphics::ScreenWidth );
+	/*memset( pSysBuffer,0u,sizeof( Color ) * Graphics::ScreenHeight * Graphics::ScreenWidth );*/
+	std::fill(pSysBuffer, pSysBuffer + Graphics::ScreenHeight * Graphics::ScreenWidth, Color(0u));
 }
 
 void Graphics::PutPixel( int x,int y,Color c )

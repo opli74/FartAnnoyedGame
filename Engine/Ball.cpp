@@ -105,17 +105,12 @@ Rect Ball::getRect() const
 void Ball::anim( float dt )
 {
 	frames += dt;
-	if ( frames > 0.5f && !swapped )
+
+	if (frames > 0.5f)
 	{
-		c = Colors::Cyan;
+		c = swapped ? Colors::Red : Colors::Cyan;
 		frames = 0.0f;
-		swapped = true;
-	}
-	else if ( frames > 0.5f && swapped )
-	{
-		c = Colors::Red;
-		frames = 0.0f;
-		swapped = false;
+		swapped = !swapped;
 	}
 }
 

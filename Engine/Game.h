@@ -52,7 +52,6 @@ private:
 	void ComposeFrame();
 	void UpdateModel(float dt);
 
-
 	/********************************/
 	/*  User Functions              */
 
@@ -71,14 +70,42 @@ private:
 	Color lightenCol( const Color& in , float amount );
 	Color darkenCol( const Color& in , float amount );
 
+
+	enum class GameMenuOption
+	{
+		Easy,
+		Medium,
+		Hard,
+		Create,
+	};
+
+
+	void handleGameMenuSelection(GameMenuOption option, float dt );
+	void handleCreateMenuSelection();
+	void handleHoveredBox( Box& box, GameMenuOption option );
+	void handleUnhoveredBox(Box& box, GameMenuOption option);
+	void configureGameParameters(int frequency, float ballSpeed);
+
+	//powerups!
+	void handleLengthPowerUp(Paddle& paddle);
+	void handleBulletPowerUp(PowerUp& power, size_t powerIndex);
+	void handleBallsPowerUp();
+	void handleBlockPowerUp();
+	void handleBombPowerUp();
+	void handleBulletPowerUpBehavior(PowerUp& power, float dt);
+
+	//level stff
+	void initializeLevel(const std::tuple<int, int>& dimensions);
+	void resetObjectsPositions();
+	void initializeWallPadding();
+	void initializeBricks(const std::vector<std::vector<int>>& gameBricks, bool drawSpaceBricks);
 	void levelChange( const std::vector< std::vector<int> >& bricks , const std::tuple<int , int>& dimensions , bool drawSpaceBricks = false );
 
 	//drawing
 	void drawTimeFormat( float time , Vec2 pos , int size );
-
 	void drawScore( );
-
 	void drawTitle( );
+
 	/********************************/
 private:
 	MainWindow& wnd;

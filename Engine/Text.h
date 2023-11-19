@@ -8,12 +8,13 @@ class Text
 public:
 	Text( ) = default;
 
-	void drawText( Graphics& gfx , const std::string& text , const Vec2& pos, const Color& c , int size, bool center);
-	void drawText( Graphics& gfx , const std::string& text , const Vec2& pos , const Color& c , int size );
+	void drawText(Graphics& gfx, const std::string& text, const Vec2& pos, const Color& c, int size, bool center);
+	void drawText(Graphics& gfx, const std::string& text, const Vec2& pos, const Color& c, int size);
 	float getLength( const std::string& text , int size);
 
 private:
-	void drawLetter( int e , int size , Graphics& gfx , const Vec2& pos , const Color& c , int f );
+	// Function to draw a character
+	void drawLetter(int character, int size, Graphics& gfx, const Vec2& pos, const Color& c, int mapping);
 
 private:
 
@@ -22,12 +23,26 @@ private:
 	static constexpr int width = 3;
 	static constexpr int height = 3;
 
-	static constexpr int textMap[ 38 ][ 2 ][ 35 ] =
+	// Constants for character mapping
+	enum CharacterMapping {
+		A = 65,
+		B = 22,
+		DOT = 9,
+	};
+
+	// Struct to represent a character's dimensions and pixels
+	struct CharacterData {
+		int width;
+		int height;
+		const std::vector<int> pixels;
+	};
+
+
+	const CharacterData characters[38] =
 	{
 		//a
 		{
-			{ 4, 7 },
-
+			 4, 7 ,
 			{
 				0, 1, 1, 0,
 				1, 0, 0, 1,
@@ -40,8 +55,7 @@ private:
 		},
 		//b
 		{ 
-			{ 4, 7 },
-
+			 4, 7 ,
 			{
 				1, 1, 1, 0,
 				1, 0, 0, 1,
@@ -54,7 +68,7 @@ private:
 		},
 		//c
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -68,7 +82,7 @@ private:
 		},
 		//d
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 1, 1, 0,
@@ -82,7 +96,7 @@ private:
 		},
 		//e
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 1, 1, 1,
@@ -96,7 +110,7 @@ private:
 		},
 		//f
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 1, 1, 1,
@@ -110,7 +124,7 @@ private:
 		},
 		//g
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -124,7 +138,7 @@ private:
 		},
 		//h
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 0, 0, 1,
@@ -138,7 +152,7 @@ private:
 		} ,
 		//i
 		{
-			{ 3, 7 },
+			3, 7 ,
 
 			{
 				1, 1, 1,
@@ -152,7 +166,7 @@ private:
 		} ,
 		//j
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 0, 0, 1,
@@ -166,7 +180,7 @@ private:
 		} ,
 		//k
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 0, 0, 1,
@@ -180,7 +194,7 @@ private:
 		} ,
 		//l
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 0, 0, 0,
@@ -194,7 +208,7 @@ private:
 		} ,
 		//m
 		{
-			{ 5, 7 },
+			5, 7 ,
 
 			{
 				1, 0, 0, 0, 1,
@@ -208,7 +222,7 @@ private:
 		} ,
 		//n
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 0, 0, 1,
@@ -222,7 +236,7 @@ private:
 		} ,
 		//o
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -236,7 +250,7 @@ private:
 		} ,
 		//p
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 1, 1, 0,
@@ -250,7 +264,7 @@ private:
 		} ,
 		//q
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -264,7 +278,7 @@ private:
 		} ,
 		//r
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 1, 1, 0,
@@ -278,7 +292,7 @@ private:
 		} ,
 		//s
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -292,7 +306,7 @@ private:
 		} ,
 		//t
 		{
-			{ 5, 7 },
+			5, 7 ,
 
 			{
 				1, 1, 1, 1, 1,
@@ -306,7 +320,7 @@ private:
 		} ,
 		//u
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 0, 0, 1,
@@ -320,7 +334,7 @@ private:
 		} ,
 		//v
 		{
-			{ 5, 7 },
+			5, 7 ,
 
 			{
 				1, 0, 0, 0, 1,
@@ -334,7 +348,7 @@ private:
 		} ,
 		//w
 		{
-			{ 5, 7 },
+			5, 7 ,
 
 			{
 				1, 0, 0, 0, 1,
@@ -348,7 +362,7 @@ private:
 		} ,
 		//x
 		{
-			{ 5, 7 },
+			5, 7 ,
 
 			{
 				1, 0, 0, 0, 1,
@@ -362,7 +376,7 @@ private:
 		} ,
 		//y
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 0, 0, 1,
@@ -376,7 +390,7 @@ private:
 		} ,
 		//z
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 1, 1, 1,
@@ -390,7 +404,7 @@ private:
 		} ,
 		// 0
 		{
-			{ 4, 7 },
+			 4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -404,7 +418,7 @@ private:
 		} ,
 		//1
 		{
-			{ 3, 7 },
+			3, 7 ,
 
 			{
 				0, 1, 0,
@@ -418,7 +432,7 @@ private:
 		} ,
 		// 2
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -432,7 +446,7 @@ private:
 		} ,
 		// 3
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -446,7 +460,7 @@ private:
 		} ,
 		//4
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 0, 1, 1,
@@ -460,7 +474,7 @@ private:
 		} ,
 		//5
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 1, 1, 1,
@@ -474,7 +488,7 @@ private:
 		} ,
 		//6
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 0, 1, 0,
@@ -488,7 +502,7 @@ private:
 		} ,
 		//7
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				1, 1, 1, 1,
@@ -502,7 +516,7 @@ private:
 		} ,
 		//8
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -516,7 +530,7 @@ private:
 		} ,
 		//9
 		{
-			{ 4, 7 },
+			4, 7 ,
 
 			{
 				0, 1, 1, 0,
@@ -530,9 +544,8 @@ private:
 		},
 		//:
 		{
-			{
-				3 , 7
-			} ,
+			
+			3 , 7,
 
 			{
 				0, 0, 0,
@@ -546,9 +559,8 @@ private:
 		},
 		//.
 		{
-			{
-				2 , 7
-			} ,
+			
+				2 , 7,
 
 			{
 				0, 0,

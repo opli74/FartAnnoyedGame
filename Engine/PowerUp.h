@@ -1,6 +1,5 @@
 #pragma once
 #include <vector>
-#include "GetRandom.h"
 #include "Graphics.h"
 #include "Paddle.h"
 #include "Brick.h"

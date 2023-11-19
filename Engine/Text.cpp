@@ -18,67 +18,55 @@ void Text::drawText( Graphics& gfx, const std::string& text , const Vec2& pos, c
 		textToDraw.push_back( int( e ) );
 	}
 
-	for ( int& e : textToDraw )
-	{
-		if ( (e > 96 && e < 122) || (e > 64 && e < 91) )
+	for (char character : textToDraw) {
+		int charCode = static_cast<int>(character);
+		if (isalpha(charCode)) 
 		{
-			if ( e > 96 && e < 122 )
-				e -= 32;
-
-			drawLetter( e , size , gfx , pos_ , c , 65);
-
-			pos_.x += ( size * textMap[ e - 65 ][ 0 ][ 0 ] + 2);
+			charCode = toupper(charCode);
+			drawLetter(charCode, size, gfx, pos_, c, CharacterMapping::A);
+			pos_.x += (size * characters[charCode - CharacterMapping::A].width + 2); 
 		}
-		else if ( e > 47 && e < 59 )
+		else if (isdigit(charCode) || character == ':')
 		{
-			drawLetter( e , size , gfx , pos_ , c , 22 );
-			pos_.x += ( size * textMap[ e - 22 ][ 0 ][ 0 ] + 2 );
+			drawLetter(charCode, size, gfx, pos_, c, CharacterMapping::B);
+			pos_.x += (size * characters[charCode - CharacterMapping::B].width + 2);
 		}
-		else if ( e == 46 )
+		else if (character == '.')
 		{
-			drawLetter( e , size , gfx , pos_ , c , 9);
-			pos_.x += ( size * textMap[ e - 22 ][ 0 ][ 0 ]  );
+			drawLetter(charCode, size, gfx, pos_, c, CharacterMapping::DOT);
+			pos_.x += (size * characters[charCode - CharacterMapping::DOT].width);
 		}
-		else
-		{
-			pos_.x += ( size * 5 );
+		else {
+			pos_.x += (size * 5);
 		}
 	}
 }
 
-void Text::drawText( Graphics& gfx , const std::string& text , const Vec2& pos , const Color& c , int size )
+void Text::drawText(Graphics& gfx, const std::string& text, const Vec2& pos, const Color& c, int size)
 {
 	Vec2 pos_ = pos;
-	std::vector<int> textToDraw;
-	for ( char e : text )
-	{
-		textToDraw.push_back( int( e ) );
-	}
+	for (char character : text) {
+		int charCode = static_cast<int>(character);
+		if (isalpha(charCode))
+		{
+			charCode = toupper(charCode);
 
-	for ( int& e : textToDraw )
-	{
-		if ( ( e > 96 && e < 122 ) || ( e > 64 && e < 91 ) )
-		{
-			if ( e > 96 && e < 122 )
-				e -= 32;
-
-			drawLetter( e , size , gfx , pos_ , c , 65 );
-
-			pos_.x += ( size * textMap[ e - 65 ][ 0 ][ 0 ] + 2 );
+			drawLetter(charCode, size, gfx, pos_, c, CharacterMapping::A);
+			pos_.x += (size * characters[charCode - CharacterMapping::A].width + 2);
 		}
-		else if ( e > 47 && e < 59 )
+		else if (isdigit(charCode) || character == ':' )
 		{
-			drawLetter( e , size , gfx , pos_ , c , 22 );
-			pos_.x += ( size * textMap[ e - 22 ][ 0 ][ 0 ] + 2 );
+			drawLetter(charCode, size, gfx, pos_, c, CharacterMapping::B);
+			pos_.x += (size * characters[charCode - CharacterMapping::B].width + 2);
 		}
-		else if ( e == 46 )
+		else if ( character == '.'  )
 		{
-			drawLetter( e , size , gfx , pos_ , c , 9 );
-			pos_.x += ( size * textMap[ e - 22 ][ 0 ][ 0 ] );
+			drawLetter(charCode, size, gfx, pos_, c, CharacterMapping::DOT);
+			pos_.x += (size * characters[charCode - CharacterMapping::DOT].width);
 		}
-		else
+		else 
 		{
-			pos_.x += ( size * 5 );
+			pos_.x += (size * 5);
 		}
 	}
 }
@@ -92,23 +80,23 @@ float Text::getLength( const std::string& text , int size )
 		textToDraw.push_back( int( e ) );
 	}
 
-	for ( int& e : textToDraw )
+	for ( int character : textToDraw )
 	{
-		if ( ( e > 96 && e < 122 ) || ( e > 64 && e < 91 ) )
+		int charCode = static_cast<int>(character);
+		if (isalpha(charCode))
 		{
-			if ( e > 96 && e < 122 )
-				e -= 32;
+			charCode = toupper(charCode);
 
-			len += ( size * textMap[ e - 65 ][ 0 ][ 0 ] + 2 );
+			len += (size * characters[charCode - CharacterMapping::A].width + 2);
 
 		}
-		else if ( e > 47 && e < 59 )
+		else if (isdigit(charCode) || character == ':')
 		{
-			len += ( size * textMap[ e - 22 ][ 0 ][ 0 ] + 2 );
+			len += (size * characters[charCode - CharacterMapping::B].width + 2);
 		}
-		else if ( e == 46 )
+		else if (character == '.'  )
 		{
-			len += ( size * textMap[ e - 22 ][ 0 ][ 0 ] );
+			len += ( size * characters[charCode - CharacterMapping::DOT].width);
 		}
 		else
 		{
@@ -118,16 +106,14 @@ float Text::getLength( const std::string& text , int size )
 	return len;
 }
 
-void Text::drawLetter( int e , int size , Graphics& gfx, const Vec2& pos, const Color& c, int f)
+void Text::drawLetter(int character, int size, Graphics& gfx, const Vec2& pos, const Color& c, int mapping)
 {
+	const CharacterData& charData = characters[character - mapping];
 	int i = 0;
-	for ( int y = 0; y < textMap[ e - f ][ 0 ][ 1 ]; y++ )
-	{
-		for ( int x = 0; x < textMap[ e - f ][ 0 ][ 0 ]; x++ )
-		{
-			if ( textMap[ e - f ][ 1 ][ i ] == 1 )
-			{
-				gfx.DrawRect( Rect( pos + Vec2( float(x * size) , float(y * size) ) , float(size) , float(size) ) , c);
+	for (int y = 0; y < charData.height; y++) {
+		for (int x = 0; x < charData.width; x++) {
+			if (charData.pixels[i] == 1) {
+				gfx.DrawRect(Rect(pos + Vec2(float(x * size), float(y * size)), float(size), float(size)), c);
 			}
 			i++;
 		}

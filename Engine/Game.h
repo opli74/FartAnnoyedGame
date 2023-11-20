@@ -98,8 +98,8 @@ private:
 	void initializeLevel(const std::tuple<int, int>& dimensions);
 	void resetObjectsPositions();
 	void initializeWallPadding();
-	void initializeBricks(const std::vector<std::vector<int>>& gameBricks, bool drawSpaceBricks);
-	void levelChange( const std::vector< std::vector<int> >& bricks , const std::tuple<int , int>& dimensions , bool drawSpaceBricks = false );
+	void initializeBricks( const std::vector< int >& gameBricks, bool drawSpaceBricks );
+	void levelChange( const std::vector< int >& gameBricks, const std::tuple<int , int>& dimensions , bool drawSpaceBricks = false );
 
 	//drawing
 	void drawTimeFormat( float time , Vec2 pos , int size );
@@ -112,6 +112,11 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables  */
+
+	float fpsTimer = 0.0f;
+	int frameCount = 0;
+	float fps = 0.0f;
+
 	GameState state = GameState::GAME_MENU;
 
 	static constexpr int screenHalfWidth = 400;

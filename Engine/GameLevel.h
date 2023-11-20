@@ -23,7 +23,6 @@ struct mapHeader
 };
 
 
-
 class GameLevel
 {
 public:
@@ -41,11 +40,13 @@ public:
 
 	//get
 	bool isCompleted( std::vector< Brick >& bricks ) const;
-	std::vector< std::vector<int> > loadTiles( GameLevel::Type type , int level , bool zeroes = false ) const;
+	std::vector< int > loadTiles( GameLevel::Type type , int level , bool zeroes = false ) const;
 	std::tuple<int , int> getDimensions( GameLevel::Type type , int level , bool zeroes = false ) const;
 
 private:
-	std::vector< std::vector<int> > loadTo2Dvec( const mapHeader& level, bool zeroes ) const;
+	std::vector< int > loadToVector( const mapHeader& level, bool zeroes ) const;
+	void loadLevelData(const std::string& fileName, std::vector<mapHeader>& levelData);
+	const std::vector<mapHeader>& getLevelData(Type type) const;
 
 
 private:
@@ -65,8 +66,8 @@ private:
 	static constexpr int maxBrick = maxHeight * maxWidth;
 
 	std::vector< mapHeader > gameLevelData;
-	std::vector< mapHeader > scoreData;
-	std::vector< mapHeader > menuData;
+	std::vector< mapHeader > scoreLevelData;
+	std::vector< mapHeader > menuLevelData;
 
 };
 

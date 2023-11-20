@@ -13,10 +13,7 @@ Timer::Timer( float amountTime )
 
 bool Timer::checkTime( ) const
 {
-	if ( time > amountTime )
-		return true;
-
-	return false;
+	return time > amountTime;
 }
 
 bool Timer::getState( ) const

@@ -64,13 +64,29 @@ void Game::Go()
 {
 	gfx.BeginFrame();	
 	float elapsedTime = ft.Mark();
-	while (elapsedTime > 0.0f)
+
+	// Calculate FPS
+	fpsTimer += elapsedTime;
+	frameCount++;
+
+	if (fpsTimer >= 1.0f) // Update FPS every 1 second
+	{
+		fps = static_cast<float>(frameCount) / fpsTimer;
+		fpsTimer = 0.0f;
+		frameCount = 0;
+	}
+
+	while( elapsedTime > 0.0f )
 	{
 		const float dt = std::min(0.00025f, elapsedTime);
 		UpdateModel(dt);
 		elapsedTime -= dt;
 	}
+
 	ComposeFrame( );
+
+
+
 	gfx.EndFrame();
 }
 
@@ -190,8 +206,9 @@ void Game::UpdateModel( float dt )
 			{
 				if ( soundMusicChange )
 				{
-					soundMusic.StopAll( );
-					soundMusic.Play( 1.0f , musicVol );
+					//soundMusic.StopAll( );
+					//soundMusic.Play( 1.0f , musicVol );
+					soundMusic.AdjustVolume( musicVol );
 					soundMusicChange = false;
 				}
 
@@ -413,6 +430,7 @@ void Game::UpdateModel( float dt )
 					score = 0;
 					lives = 6;
 					time = 0;
+					play = true;
 
 					playSound( soundMusic , L"Sounds\\musicTitle.wav" , musicVol , 0.0f , 34.0f );
 					soundChange.StopAll( );
@@ -1139,7 +1157,7 @@ void Game::initializeWallPadding()
 	topLeft = Vec2((wall.getWall().left + padX), (wall.getWall().top + padY));
 }
 
-void Game::initializeBricks(const std::vector<std::vector<int>>& gameBricks, bool drawSpaceBricks)
+void Game::initializeBricks(const std::vector< int >& gameBricks, bool drawSpaceBricks)
 {
 	bricks.clear();
 	for (PowerUp& e : powers)
@@ -1149,40 +1167,50 @@ void Game::initializeBricks(const std::vector<std::vector<int>>& gameBricks, boo
 	powers.clear();
 	hasBulletPower = false;
 
-	int y = 0, x = 0;
-	for (auto& row : gameBricks)
+	for ( int y = 0; y < nBrickCols; y++)
 	{
-		for (auto& col : row)
+		for (int x = 0; x < nBrickRows; x++)
 		{
-			if (col > 0 && col < 6)
+			int brick = gameBricks[x + nBrickRows * y];
+
+			switch (brick)
 			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, brickColors[(col)-1], 1, Brick::Type::normal));
-			}
-			else if (col == 6)
-			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::MakeRGB(255, 137, 0), 1, Brick::Type::invinc));
-				indestructable++;
-			}
-			else if (col == 7)
-			{
-				bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::Gray, 2, Brick::Type::extra));
-			}
-			else
-			{
-				if (drawSpaceBricks)
+				case 1:
+				case 2:
+				case 3:
+				case 4:
+				case 5:
 				{
-					bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::MakeRGB(60, 60, 60), 1, Brick::Type::empty));
+					bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, brickColors[(brick)-1], 1, Brick::Type::normal));
+					break;
 				}
-				nonBrickAmount++;
+				case 6:
+				{
+					bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::MakeRGB(255, 137, 0), 1, Brick::Type::invinc));
+					indestructable++;
+					break;
+				}
+				case 7:
+				{
+					bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::Gray, 2, Brick::Type::extra));
+					break;
+				}
+				default:
+				{
+					if (drawSpaceBricks)
+					{
+						bricks.push_back(Brick(Rect(topLeft + Vec2((x * brickWidth), (y * brickHeight)), brickWidth, brickHeight), x, y, Colors::MakeRGB(60, 60, 60), 1, Brick::Type::empty));
+					}
+					nonBrickAmount++;
+					break;
+				}
 			}
-			x++;
+
 		}
-		y++;
-		x = 0;
 	}
 }
 
-void Game::levelChange( const std::vector< std::vector<int> >& gameBricks , const std::tuple<int , int>& dimensions , bool drawSpaceBricks )
+void Game::levelChange( const std::vector< int >& gameBricks , const std::tuple<int , int>& dimensions , bool drawSpaceBricks )
 {
 	// Common initialization
 	initializeLevel(dimensions);
@@ -1242,7 +1270,6 @@ std::string Game::removeTail(std::string& str)
 		// Found the decimal separator, remove the tail
 		str.erase(str.begin() + index + 2, str.end());
 	}
-	// else: Decimal separator not found, do nothing or handle as appropriate
 
 	return str;
 }
@@ -1361,6 +1388,8 @@ Color Game::darkenCol( const Color& in , float amount )
 //drawing logic loop
 void Game::ComposeFrame()
 {
+	
+
 	//main menu screen
 	switch ( state )
 	{
@@ -1493,4 +1522,5 @@ void Game::ComposeFrame()
 			break;
 		}
 	}
+	text.drawText(gfx, "fps: "+std::to_string(int(fps)) , Vec2(740, 5), Colors::White, 1);
 }

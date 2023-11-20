@@ -2,136 +2,88 @@
 
 GameLevel::GameLevel( )
 {
-    for ( const std::string& e : fileNames )
+    loadLevelData("levels.txt", gameLevelData);
+    loadLevelData("menuBricks.txt", menuLevelData);
+    loadLevelData("scoreBricks.txt", scoreLevelData);
+}
+
+void GameLevel::loadLevelData(const std::string& fileName, std::vector<mapHeader>& levelData)
+{
+    std::ifstream file(fileName);
+    if (!file.is_open())
     {
-        std::ifstream file( e );
-
-        while ( !file.eof( ) )
-        {
-            mapHeader data {};
-
-            file >> data.id >> data.width >> data.height;
-
-            int count = 0;
-            std::string line;
-
-            while ( count <= data.height )
-            {
-                std::getline( file , line );
-                std::stringstream iss( line );
-
-                for ( std::string value; std::getline( iss , value , ' ' ); )
-                {
-                    data.data.push_back( std::stoi( value ) );
-                }
-
-                count++;
-            }
-            if ( e == "levels.txt" ) { gameLevelData.push_back( data ); }
-            else if ( e == "menuBricks.txt" ) { menuData.push_back( data ); }
-            else if ( e == "scoreBricks.txt" ) { scoreData.push_back( data ); }
-        }
-        file.close( );
+        // Handle file opening error
+        return;
     }
-    
+
+    while (file)
+    {
+        mapHeader data{};
+        file >> data.id >> data.width >> data.height;
+
+        for (int y = 0; y < data.height; ++y)
+        {
+            for (int x = 0; x < data.width; ++x)
+            {
+                int value;
+                file >> value;
+                data.data.push_back(value);
+            }
+        }
+
+        if (fileName == "levels.txt") gameLevelData.push_back(data);
+        else if (fileName == "menuBricks.txt") menuLevelData.push_back(data);
+        else if (fileName == "scoreBricks.txt") scoreLevelData.push_back(data);
+    }
+
+    file.close();
 }
 
 bool GameLevel::isCompleted( std::vector< Brick >& bricks ) const
 {
-    for ( Brick& brick : bricks )
-    {
-        if ( brick.getDestroyed( ) ) { return false; }
-    }
-    return true;
+    return std::all_of(bricks.begin(), bricks.end(), [](Brick& brick) {
+        return brick.getDestroyed();
+        });
 }
 
-std::vector<std::vector<int>> GameLevel::loadTiles( GameLevel::Type type, int level , bool zeroes ) const
+std::vector<int> GameLevel::loadTiles( GameLevel::Type type, int level , bool zeroes ) const
 {
-    switch (type)
+
+    const auto& levelData = getLevelData(type);
+
+    auto it = std::find_if(levelData.begin(), levelData.end(), [level](const mapHeader& e) {
+        return e.id == level;
+        });
+
+    if (it != levelData.end())
     {
-        case Type::Create:
-        case Type::Game:
-        {
-            for (const mapHeader& e : gameLevelData)
-            {
-                if (e.id == level)
-                {
-                    return loadTo2Dvec(e, zeroes);
-                }
-            }
-            break;
-        }
-        case Type::Score:
-        {
-            for (const mapHeader& e : scoreData)
-            {
-                if (e.id == level)
-                {
-                    return loadTo2Dvec(e, zeroes);
-                }
-            }
-            break;
-        }
-        case Type::Menu:
-        {
-            for (const mapHeader& e : menuData)
-            {
-                if (e.id == level)
-                {
-                    return loadTo2Dvec(e, zeroes);
-                }
-            }
-            break;
-        }
+        return loadToVector(*it, zeroes);
     }
+
+    // Handle level not found
+    return {};
 }
 
 std::tuple<int , int> GameLevel::getDimensions( GameLevel::Type type , int level, bool zeroes ) const
 {
-    switch ( type )
-    {
-        case Type::Create:
-        case Type::Game:
-        {
-            if ( zeroes ) { return { maxWidth, maxHeight }; }
+    const auto& levelData = getLevelData(type);
 
-            for ( const mapHeader& e : gameLevelData )
-            {
-                if ( e.id == level )
-                {
-                    return { e.width, e.height };
-                }
-            }
-            break;
-        }
-        case Type::Score:
-        {
-            for ( const mapHeader& e : scoreData )
-            {
-                if ( e.id == level )
-                {
-                    return { e.width, e.height };
-                }
-            }
-            break;
-        }
-        case Type::Menu:
-        {
-            for ( const mapHeader& e : menuData )
-            {
-                if ( e.id == level )
-                {
-                    return { e.width, e.height };
-                }
-            }
-            break;
-        }
+    auto it = std::find_if(levelData.begin(), levelData.end(), [level](const mapHeader& e) {
+        return e.id == level;
+        });
+
+    if (it != levelData.end())
+    {
+        return zeroes ? std::make_tuple(maxWidth, maxHeight) : std::make_tuple(it->width, it->height);
     }
+
+    // Handle level not found
+    return {};
 }
 
-std::vector<std::vector<int>> GameLevel::loadTo2Dvec( const mapHeader& level , bool zeroes ) const
+std::vector<int> GameLevel::loadToVector( const mapHeader& level , bool zeroes ) const
 {
-    std::vector< std::vector < int > > bricks;
+    std::vector< int > bricks;
 
     if ( zeroes )
     {
@@ -141,35 +93,45 @@ std::vector<std::vector<int>> GameLevel::loadTo2Dvec( const mapHeader& level , b
         
         for ( int y = 0 - Yhalf; y < level.height + Yhalf; y++ )
         {
-            std::vector <int> row;
             for ( int x = 0 - Xhalf; x < level.width + Xhalf; x++ )
             {
-                if ( y < 0 || y >= level.height )
+                if ( (y < 0 || y >= level.height ) || (x < 0 || x >= level.width) )
                 {
-                    row.push_back( 0 );
-                }
-                else if ( x < 0 || x >= level.width )
-                {
-                    row.push_back( 0 );
+                    bricks.push_back( 0 );
                 }
                 else
                 {
-                    row.push_back( level.data[ x + level.width * y ] );
+                    bricks.push_back( level.data[ x + level.width * y ] );
                 }
             }
-            bricks.push_back( row );
         }
         return bricks;
     }
 
     for ( int y = 0; y < level.height; y++ )
     {
-        std::vector <int> row;
         for ( int x = 0; x < level.width; x++ )
         {
-            row.push_back( level.data[ x + level.width * y ] );
+            bricks.push_back( level.data[ x + level.width * y ] );
         }
-        bricks.push_back( row );
     }
     return bricks;
+}
+
+const std::vector<mapHeader>& GameLevel::getLevelData(Type type) const
+{
+    switch (type)
+    {
+    case Type::Create:
+    case Type::Game:
+        return gameLevelData;
+    case Type::Score:
+        return scoreLevelData;
+    case Type::Menu:
+        return menuLevelData;
+    }
+
+    // Handle invalid type
+    static const std::vector<mapHeader> empty;
+    return empty;
 }

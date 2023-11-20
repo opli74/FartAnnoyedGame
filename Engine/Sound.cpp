@@ -61,6 +61,17 @@ void SoundSystem::PlaySoundBuffer( Sound & s,float freqMod,float vol )
 	}
 }
 
+void Sound::AdjustVolume(float newVolume)
+{
+	std::lock_guard<std::mutex> lock(mutex);
+
+	volume = std::max(0.0f, std::min(1.0f, newVolume));
+	for (auto& pChannel : activeChannelPtrs)
+	{
+		pChannel -> SetVolume(volume);
+	}
+}
+
 SoundSystem::XAudioDll::XAudioDll()
 {
 	LoadType type = LoadType::System;
@@ -308,6 +319,19 @@ void SoundSystem::Channel::Stop()
 	assert( pSource && pSound );
 	pSource->Stop();
 	pSource->FlushSourceBuffers();
+}
+
+void SoundSystem::Channel::SetVolume(float newVolume)
+{
+	assert(pSource && "Invalid source voice");
+	if (pSource)
+	{
+		HRESULT hr;
+		if (FAILED(hr = pSource->SetVolume(newVolume)))
+		{
+			throw CHILI_SOUND_API_EXCEPTION(hr, L"Setting volume for channel");
+		}
+	}
 }
 
 void SoundSystem::Channel::RetargetSound( const Sound* pOld,Sound* pNew )
@@ -645,6 +669,8 @@ void Sound::Play( float freqMod,float vol )
 	SoundSystem::Get().PlaySoundBuffer( *this,freqMod,vol );
 }
 
+
+
 void Sound::StopOne()
 {
 	std::lock_guard<std::mutex> lock( mutex );
@@ -661,6 +687,7 @@ void Sound::StopAll()
 	{
 		pChannel->Stop();
 	}
+	
 }
 
 Sound::~Sound()

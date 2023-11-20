@@ -70,6 +70,7 @@ private:
 		XAudioDll();
 		~XAudioDll();
 		operator HMODULE() const;
+		
 	private:
 		static const wchar_t* GetDllPath( LoadType type );
 	private:
@@ -93,6 +94,7 @@ public:
 		~Channel();
 		void PlaySoundBuffer( class Sound& s,float freqMod,float vol );
 		void Stop();
+		void SetVolume(float newVolume);
 	private:
 		void RetargetSound( const Sound* pOld,Sound* pNew );
 	private:
@@ -106,6 +108,7 @@ public:
 	static void SetMasterVolume( float vol = 1.0f );
 	static const WAVEFORMATEX& GetFormat();
 	void PlaySoundBuffer( class Sound& s,float freqMod,float vol );
+	
 private:
 	SoundSystem();
 	void DeactivateChannel( Channel& channel );
@@ -153,12 +156,14 @@ public:
 	void Play( float freqMod = 1.0f,float vol = 1.0f );
 	void StopOne();
 	void StopAll();
+	void AdjustVolume(float newVolume);
 	~Sound();
 private:	
 	Sound( const std::wstring& fileName,LoopType loopType,
 		unsigned int loopStartSample,unsigned int loopEndSample,
 		float loopStartSeconds,float loopEndSeconds );
 private:
+	float volume = 1.0f;  // Default volume is 100%
 	UINT32 nBytes = 0u;
 	bool looping = false;
 	unsigned int loopStart;

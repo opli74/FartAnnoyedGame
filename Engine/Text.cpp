@@ -4,6 +4,7 @@
 void Text::drawText( Graphics& gfx, const std::string& text , const Vec2& pos, const Color& c , int size, bool center)
 {
 	Vec2 pos_ = pos;
+
 	if ( center )
 	{
 		float lenX = getLength( text , size );
@@ -12,13 +13,7 @@ void Text::drawText( Graphics& gfx, const std::string& text , const Vec2& pos, c
 		pos_.y -= lenY / 2;
 	}
 
-	std::vector<int> textToDraw;
-	for ( char e : text )
-	{
-		textToDraw.push_back( int( e ) );
-	}
-
-	for (char character : textToDraw) {
+	for (char character : text) {
 		int charCode = static_cast<int>(character);
 		if (isalpha(charCode)) 
 		{
@@ -36,7 +31,8 @@ void Text::drawText( Graphics& gfx, const std::string& text , const Vec2& pos, c
 			drawLetter(charCode, size, gfx, pos_, c, CharacterMapping::DOT);
 			pos_.x += (size * characters[charCode - CharacterMapping::DOT].width);
 		}
-		else {
+		else 
+		{
 			pos_.x += (size * 5);
 		}
 	}
@@ -50,7 +46,6 @@ void Text::drawText(Graphics& gfx, const std::string& text, const Vec2& pos, con
 		if (isalpha(charCode))
 		{
 			charCode = toupper(charCode);
-
 			drawLetter(charCode, size, gfx, pos_, c, CharacterMapping::A);
 			pos_.x += (size * characters[charCode - CharacterMapping::A].width + 2);
 		}
@@ -71,30 +66,23 @@ void Text::drawText(Graphics& gfx, const std::string& text, const Vec2& pos, con
 	}
 }
 
-float Text::getLength( const std::string& text , int size )
+float Text::getLength(const std::string& text, int size)
 {
 	float len = 0.0f;
-	std::vector<int> textToDraw;
-	for ( char e : text )
-	{
-		textToDraw.push_back( int( e ) );
-	}
-
-	for ( int character : textToDraw )
+	
+	for ( char character : text )
 	{
 		int charCode = static_cast<int>(character);
 		if (isalpha(charCode))
 		{
 			charCode = toupper(charCode);
-
 			len += (size * characters[charCode - CharacterMapping::A].width + 2);
-
 		}
 		else if (isdigit(charCode) || character == ':')
 		{
 			len += (size * characters[charCode - CharacterMapping::B].width + 2);
 		}
-		else if (character == '.'  )
+		else if (character == '.' )
 		{
 			len += ( size * characters[charCode - CharacterMapping::DOT].width);
 		}

@@ -2,16 +2,15 @@
 
 using namespace std::chrono;
 
-FrameTimer::FrameTimer()
-{
-	last = steady_clock::now();
-}
+FrameTimer::FrameTimer() : last(std::chrono::high_resolution_clock::now()) {}
 
 float FrameTimer::Mark()
 {
-	const auto old = last;
-	last = steady_clock::now();
-	const duration<float> frameTime = last - old;
-	return frameTime.count();
+    auto now = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration<float>(now - last);
+    last = now;
+
+    return duration.count();
 }
+
 
